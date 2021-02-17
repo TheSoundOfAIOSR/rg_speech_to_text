@@ -1,4 +1,4 @@
-Speec To Text environment setup has to target Linux, Mac, Windows platforms. 
+Speech To Text environment setup has to target Linux, Mac, Windows platforms. 
 
 In case of CUDA GPU availability, we target Ubuntu 20.04 LTS and Windows 10 platforms, dedicated mainly for training and development.
 
