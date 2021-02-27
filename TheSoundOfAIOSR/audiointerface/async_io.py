@@ -54,10 +54,11 @@ async def capture_and_playback(**kwargs):
 
 
 async def stream_capture(samplerate, channels, device, buffersize, dtype='float32'):
-    """Generator that yields blocks of input/output data as NumPy arrays.
+    """Generator that yields blocks of input data 
+    captured from sounddevice InputStream into NumPy arrays.
 
-    The output blocks are uninitialized and have to be filled with
-    appropriate audio signals.
+    The audio callback pushes the captured data to `in_queue`,
+    and at the same time is consumed the queue and yields the captured data
 
     """
     assert buffersize != 0
@@ -86,8 +87,8 @@ async def stream_capture(samplerate, channels, device, buffersize, dtype='float3
 async def capture_to_file(filename, samplerate, channels, subtype,
                           device, buffersize):
     """
-    Asynchronously iterates over a stream generator and for each block
-    simply copies the input data into the output block.
+    Asynchronously iterates over stream_capture generator and for each block
+    simply copies the input data into the audio file.
 
     """
     # Make sure the file is opened before recording anything:
