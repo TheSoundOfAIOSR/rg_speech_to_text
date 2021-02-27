@@ -10,3 +10,6 @@ At the same time the examples are good reference how to integrate in application
 All the three example applications are memory efficient in the sense that does not depend on the duration of the audio stream, doesn't load in memory more than the buffer size of audio data.
 
 The two capture examples are completely asynchronous and easy to integrate in GUI.
+
+All the three applications were tested under Linux, native Windows 10 and within WSL2 running on Windows 10 host. 
+For the environment setup, please check `setup/stt/gpu/environment-setup.md`
