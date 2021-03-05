@@ -130,3 +130,6 @@ dmypy.json
 
 # VS Code settings
 .vscode/
+
+# here are pulled external repos to locally build
+externals/
