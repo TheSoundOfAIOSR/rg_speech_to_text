@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""
+What we see in (https://github.com/NVIDIA/NeMo/blob/main/tutorials/asr/02_Online_ASR_Microphone_Demo.ipynb)
+doesn't work in Colab, nor locally in Jupyter Lab, because some config paths has been changed 
+and the notebook from the above link was not updated.
+Here you will find the extracted and fixed version, which runs in Ubuntu 20.04 (I tested in WSL2 with GPU support).
+"""
+
 import os, time
 import copy
 import numpy as np
@@ -22,7 +30,6 @@ asr_model = nemo_asr.models.EncDecCTCModel.from_pretrained('QuartzNet15x5Base-En
 # Preserve a copy of the full config
 cfg = copy.deepcopy(asr_model._cfg)
 print(OmegaConf.to_yaml(cfg))
-
 
 # Make config overwrite-able
 OmegaConf.set_struct(cfg.preprocessor, False)
@@ -113,7 +120,7 @@ class AudioDataLayer(IterableDataset):
         return 1
 
 
-data_layer = AudioDataLayer(sample_rate=cfg.preprocessor.params.sample_rate)
+data_layer = AudioDataLayer(sample_rate=cfg.preprocessor.sample_rate)
 data_loader = DataLoader(data_layer, batch_size=1, collate_fn=data_layer.collate_fn)
 
 
@@ -152,8 +159,8 @@ class FrameASR:
         self.n_frame_len = int(frame_len * self.sr)
         self.frame_overlap = frame_overlap
         self.n_frame_overlap = int(frame_overlap * self.sr)
-        timestep_duration = model_definition['AudioToMelSpectrogramPreprocessor']['params']['window_stride']
-        for block in model_definition['JasperEncoder']['params']['jasper']:
+        timestep_duration = model_definition['AudioToMelSpectrogramPreprocessor']['window_stride']
+        for block in model_definition['JasperEncoder']['jasper']:
             timestep_duration *= block['stride'][0] ** block['repeat']
         self.n_timesteps_overlap = int(frame_overlap / timestep_duration) - 2
         self.buffer = np.zeros(shape=2*self.n_frame_overlap + self.n_frame_len,
@@ -219,7 +226,7 @@ asr = FrameASR(model_definition = {
                    'sample_rate': SAMPLE_RATE,
                    'AudioToMelSpectrogramPreprocessor': cfg.preprocessor,
                    'JasperEncoder': cfg.encoder,
-                   'labels': cfg.decoder.params.vocabulary
+                   'labels': cfg.decoder.vocabulary
                },
                frame_len=FRAME_LEN, frame_overlap=2, 
                offset=4)
