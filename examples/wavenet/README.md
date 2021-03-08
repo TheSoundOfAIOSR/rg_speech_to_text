@@ -17,7 +17,7 @@ Installation guide is in the root of this repository, in README.md
 - example
     - `python asr_inference_recording.py --recording input/rec.ogg -bs 16000 -out output/transcription.txt`
     - `python asr_inference_recording.py --recording input/rec.ogg -bs 16000 -ov 1600 -out output/transcription.txt`
-    - `python asr_inference_recording.py --recording input/rec.ogg -bs 16000 -ov 1600 -out output/transcription.txt --device gpu`
+    - `python asr_inference_recording.py --recording input/rec.ogg -bs 16000 -ov 1600 -out output/transcription.txt --device cuda`
     - `python asr_inference_recording.py --recording input/rec.ogg -bs 16000 -ov 1600 -out output/transcription.txt --device cpu`
 
 ### via live recording
