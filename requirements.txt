@@ -1,6 +1,5 @@
-cffi==1.14.5
-numpy==1.19.2
-pkg-resources==0.0.0
-pycparser==2.20
+librosa==0.8.0
+PyAudio==0.2.11
 sounddevice==0.4.1
 SoundFile==0.10.3.post1
+transformers==4.3.3
