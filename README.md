@@ -5,7 +5,19 @@ This repository will be used to experiment/test new approaches before they are f
 
 ## Installation
 
-Install `tensorflow>=2.4.1`, depending on the GPU availability, install `tensorflow-gpu` also.
+### Installing via pip
+- Download and Install python (recommend 3.8)
+- Create a virtual environment using `python -m venv env_name`
+- enable created environment `env_path\Scripts\activate`
+- Install PyTorch `pip install torch==1.8.0+cu102 torchaudio===0.8.0 -f https://download.pytorch.org/whl/torch_stable.html`
+- install required dependencies `pip install -r requirements.txt`
+
+### Installing via conda
+- Download and install miniconda
+- Create a new virutal environment using `conda create --name env_name python==3.8`
+- enable create environment `conda activate env_name`
+- Install PyTorch `conda install pytorch torchaudio cudatoolkit=11.1 -c pytorch`
+- install required dependencies `pip install -r requirements.txt`
 
 ### Installing from source
 
