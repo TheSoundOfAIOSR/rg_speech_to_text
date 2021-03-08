@@ -9,7 +9,7 @@ This repository will be used to experiment/test new approaches before they are f
 - Download and Install python (recommend 3.8)
 - Create a virtual environment using `python -m venv env_name`
 - enable created environment `env_path\Scripts\activate`
-- Install PyTorch `pip install torch==1.8.0+cu102 torchaudio===0.8.0 -f https://download.pytorch.org/whl/torch_stable.html`
+- Install PyTorch 1.8.0 from https://pytorch.org/get-started/locally/
 - install required dependencies `pip install -r requirements.txt`
 
 ### Installing via conda
