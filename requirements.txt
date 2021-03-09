@@ -1,4 +1,4 @@
-numpy==1.19.2
+numpy==1.20.1
 pycparser==2.20
 librosa==0.8.0
 SoundFile==0.10.3.post1
