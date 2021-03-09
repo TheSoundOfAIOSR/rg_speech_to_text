@@ -47,6 +47,6 @@ For 4min 10sec recorder audio
 
 ## Tested Platforms
 - native windows 10 ✔
-- windows-10 wsl2 cpu
-- windows-10 wsl2 gpu
+- windows-10 wsl2 cpu ✔
+- windows-10 wsl2 gpu ✔
 - Ubuntu
