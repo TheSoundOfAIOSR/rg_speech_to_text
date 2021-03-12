@@ -73,6 +73,7 @@ if len(input_devices):
     try:
         while stream.is_active():
             time.sleep(0.1)
+            sys.stdout.flush()
     finally:        
         stream.stop_stream()
         stream.close()
