@@ -16,7 +16,7 @@ async def capture_and_play(buffersize, *, channels=1, dtype='float32',
     assert buffersize != 0
     in_queue = asyncio.Queue()
     out_queue = queue.Queue()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     """
     callback(indata: ndarray, outdata: ndarray, frames: int,
@@ -63,7 +63,7 @@ async def stream_capture(samplerate, channels, device, buffersize, dtype='float3
     """
     assert buffersize != 0
     in_queue = asyncio.Queue()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     """
     callback(indata: numpy.ndarray, frames: int,
