@@ -24,13 +24,7 @@ This repository will be used to experiment/test new approaches before they are f
 
 NeMo toolkit 1.0.0rc1 currently is supported in Linux only and will be installed by
 ```
-# until https://github.com/NVIDIA/NeMo/pull/1869 is not merged, we cannot install like here:
 python -m pip install git+https://github.com/NVIDIA/NeMo.git@r1.0.0rc1#egg=nemo_toolkit[all]
-
-# instead we have to use a local build from this fix branch
-git clone --single-branch --branch stick-torch-171  https://github.com/tiborkiss/NeMo
-cd NeMo
-./reinstall.sh
 ```
 For Windows environment the only option remain WSL2 with GPU support as described in `setup/stt/gpu/environment-setup.md`
 
