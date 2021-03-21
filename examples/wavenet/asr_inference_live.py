@@ -34,19 +34,31 @@ def transcribe_input(tokenizer, model, inputs):
     predicted_ids = torch.argmax(logits, dim =-1)
     return tokenizer.decode(predicted_ids[0])
 
-print("Start Transcribing...")
-if args.output:
-    with utils.MicrophoneStreaming(buffersize=args.blocksize) as stream:
-        with open(args.output, "w") as f:
-            for block in stream.generator():
-                transcriptions = transcribe_input(tokenizer, model, block)
-                if not transcriptions == "":
-                    f.write(transcriptions)
-                    print(transcriptions)
-else:
+def print_transcriptions(transcriptions):
+    print(transcriptions, end=" ")
+
+def write_to_file(output_file, transcriptions):
+    output_file.write(transcriptions)
+
+def capture_and_transcribe(output_file=None):
     with utils.MicrophoneStreaming(buffersize=args.blocksize) as stream:
         for block in stream.generator():
-            transcriptions = transcribe_input(tokenizer, model, block)
+            transcriptions = transcribe_input(tokenizer=tokenizer, 
+                                            model=model, 
+                                            inputs=block)
             if not transcriptions == "":
-                print(transcriptions)
+                print_transcriptions(transcriptions=transcriptions)
+                if output_file is not None:
+                    write_to_file(output_file=output_file, 
+                                    transcriptions=transcriptions)
 
+if __name__=="__main__":
+    print("Start Transcribing...")
+    try:
+        if args.output:
+            with open(args.output, "w") as f:
+                capture_and_transcribe(f)
+        else:
+            capture_and_transcribe()
+    except KeyboardInterrupt:
+        print("Exited")
