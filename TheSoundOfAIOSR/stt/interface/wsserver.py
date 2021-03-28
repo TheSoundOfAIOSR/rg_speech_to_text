@@ -29,7 +29,7 @@ class SimpleServerInterface(WebsocketServer):
             yield json.dumps({"resp":
                 await self._control.load_stt_models(logger=logging)})
         except RuntimeError as re:
-            yield json.dumps({"reps": False, "error": "{0}".format(re)})
+            yield json.dumps({"resp": False, "error": "{0}".format(re)})
 
     async def status(self):
         yield json.dumps({"resp": f"{self._control.state.name}"
