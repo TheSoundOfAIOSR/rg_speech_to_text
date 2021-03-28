@@ -15,8 +15,14 @@ class SpeechToTextSM(sm.StateMachine):
         capture_and_transcribe = "Capture and transcribe..."
         idle = "Idle..."
 
+    microphone_name: Optional[str] = None
+
+    def select_microphone(self, name):
+        self.microphone_name = name
+
+
     @sm.event(None, States.uninitialized)
-    async def uninitialized(self, logger: logging.Logger) -> None:
+    async def reset(self, logger: logging.Logger) -> None:
         logger.debug("uninitialized action")
     
 
@@ -27,6 +33,7 @@ class SpeechToTextSM(sm.StateMachine):
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, load_models, logger),
         # it will be resumed only after the load is done
+        await self.models_ready(logger)
         logger.debug("preload_models action return.")
 
     
@@ -37,7 +44,7 @@ class SpeechToTextSM(sm.StateMachine):
 
     @sm.event(source=States.models_ready, target=States.capture_and_transcribe)
     async def start_capture_and_transcribe(self, logger: logging.Logger) -> None:
-        logger.debug("start_capture_and_transcribe action.")
+        logger.debug("start_capture_and_transcribe action.")#, self.microphone_name)
 
     
     @sm.event(source=States.capture_and_transcribe, target=States.idle)
