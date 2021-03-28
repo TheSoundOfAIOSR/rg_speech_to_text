@@ -12,7 +12,6 @@ class SimpleClientInterface(WebsocketClient):
     then exits.
     """
     async def _producer(self, websocket):
-#        logging.debug(await self.example_func())
         logging.debug(await self.status())
         logging.debug(await self.setup_model())
         logging.debug(await self.status())

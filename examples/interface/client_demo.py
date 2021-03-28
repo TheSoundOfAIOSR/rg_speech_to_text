@@ -10,7 +10,6 @@ from examples.interface.wsclient import SimpleClientInterface
 c = SimpleClientInterface(host="localhost", port=8786)
 
 async def main():
-    #logging.debug(c.status())
     ...
 
 if __name__ == "__main__":

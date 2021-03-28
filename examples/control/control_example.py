@@ -25,11 +25,7 @@ async def wait_and_show_states(n, t=0.2):
     for _ in range(n):
         logger.debug(await asyncio.sleep(t, result=f"..current state is {control.state}"))
 
-async def silent_trigger(coro):
-    """ This should be removed once we can correctly use 
-        guard_with = statesman.Guard.silence
-        https://github.com/opsani/statesman/issues/20
-    """
+async def silent(coro):
     try:
         await coro
     except RuntimeError as re:
@@ -42,16 +38,14 @@ async def _example_sequential_controller(control):
     a chosen event sequence scenario will be executed as it would be
     called by a user.
     """
-    await silent_trigger(control.uninitialized(logger=logger))
-    await wait_and_show_states(1)
-
-    await silent_trigger(control.load_stt_models(logger=logger))
+    await silent(control.load_stt_models(logger=logger))
     await wait_and_show_states(15)
 
-    await silent_trigger(control.start_capture_and_transcribe(logger=logger))
+    await silent(control.start_capture_and_transcribe(
+        source_device="Mic 1", logger=logger))
     await wait_and_show_states(5)
 
-    await silent_trigger(control.stop_transcription(logger=logger))
+    await silent(control.stop_transcription(logger=logger))
     await wait_and_show_states(5)
 
 
