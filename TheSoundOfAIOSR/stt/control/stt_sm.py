@@ -2,7 +2,6 @@ from typing import Optional, List
 import asyncio
 import logging
 import statesman as sm
-import sys
 
 from TheSoundOfAIOSR.stt.control.model_loader import load_stt_models as load_models
 
@@ -15,18 +14,6 @@ class SpeechToTextSM(sm.StateMachine):
         models_ready = "The models are preloaded and ready."
         capture_and_transcribe = "Capture and transcribe..."
         idle = "Idle..."
-
-    selected_microphone: Optional[str] = None
-    last_transcription: Optional[str] = None
-
-
-    def select_microphone(self, name):
-        self.selected_microphone = name
-
-
-    def set_last_transcription(self, text):
-        self.last_transcription = text
-
 
     @sm.event(None, States.uninitialized)
     async def reset(self, logger: logging.Logger) -> None:
@@ -54,15 +41,16 @@ class SpeechToTextSM(sm.StateMachine):
     @sm.event(source=States.models_ready,
               target=States.capture_and_transcribe,
               return_type=bool)
-    async def start_capture_and_transcribe(self, logger: logging.Logger):
-        logger.debug("start_capture_and_transcribe action.")#, self.microphone_name)
+    async def start_capture_and_transcribe(
+                self, source_device: str, logger: logging.Logger):
+        logger.debug("start_capture_and_transcribe from device '{0}'"
+                .format(source_device))
         return True
 
 
     @sm.event(source=States.capture_and_transcribe,
               target=States.idle,
-              return_type=bool)
+              return_type=object)
     async def stop_transcription(self, logger: logging.Logger):
-        self.last_transcription = "Give me a guitar"
         logger.debug("stop_transcription")
-        return True
+        return "Give me a guitar"

@@ -8,10 +8,8 @@ class SimpleServerInterface(WebsocketServer):
         super(SimpleServerInterface, self).__init__(**kwargs)
         self._register(self.setup_model)
         self._register(self.status)
-        self._register(self.select_microphone)
         self._register(self.start)
         self._register(self.stop)
-        self._register(self.fetch)
         self._control = SpeechToTextSM(state=SpeechToTextSM.States.uninitialized)
 
     """
@@ -35,14 +33,13 @@ class SimpleServerInterface(WebsocketServer):
         yield json.dumps({"resp": f"{self._control.state.name}"
                          if self._control.state else 'None'})
 
-    async def select_microphone(self, name):
-        self._control.select_microphone(name)
-        yield json.dumps({"resp": name})
-
-    async def start(self):
+    async def start(self, name):
+        """ start capturing with microphone device given in `name` param.
+        """
         try:
             yield json.dumps({"resp":
-                await self._control.start_capture_and_transcribe(logger=logging)})
+                await self._control.start_capture_and_transcribe(
+                        source_device=name, logger=logging)})
         except RuntimeError as re:
             yield json.dumps({"reps": False, "error": "{0}".format(re)})
 
