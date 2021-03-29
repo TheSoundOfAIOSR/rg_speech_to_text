@@ -22,12 +22,6 @@ This repository will be used to experiment/test new approaches before they are f
 - Install PyTorch `conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=11.0 -c pytorch`
 - install required dependencies `pip install -r requirements[-linux|-win].txt`
 
-NeMo toolkit 1.0.0rc1 currently is supported in Linux only and will be installed by
-```
-python -m pip install git+https://github.com/NVIDIA/NeMo.git@r1.0.0rc1#egg=nemo_toolkit[all]
-```
-For Windows environment the only option remain WSL2 with GPU support as described in `setup/stt/gpu/environment-setup.md`
-
 ### Installing TheSoundOfAIOSR's rg_speech_to_text from source
 
 ```
