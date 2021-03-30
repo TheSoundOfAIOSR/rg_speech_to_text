@@ -20,7 +20,13 @@ This repository will be used to experiment/test new approaches before they are f
 - Create a new virutal environment using `conda create --name env_name python==3.8`
 - enable create environment `conda activate env_name`
 - Install PyTorch `conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=11.0 -c pytorch`
-- install required dependencies `pip install -r requirements[-linux|-win].txt`
+- install required dependencies `pip install -r requirements[-linux].txt` 
+  For Windows platform it is enough requirements.txt and in addition install the audio driver from conda, like the following:
+  ```
+  conda install -c conda-forge python-sounddevice
+  conda install pyaudio
+  ```
+  The reason for this different install path is [explained here.](setup/audio_setup.md)  
 
 ### Installing TheSoundOfAIOSR's rg_speech_to_text from source
 
