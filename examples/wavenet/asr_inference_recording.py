@@ -1,9 +1,11 @@
-import torch
-import transformers
-import utils.utils as utils
+import sys
+sys.path.insert(0, '../..')
+
+from TheSoundOfAIOSR.stt.wavenet.audiointerface import AudioStreaming
+from TheSoundOfAIOSR.stt.wavenet import WaveNet
 import argparse
-import time
-import numpy as np
+import asyncio
+import functools
 
 parser = argparse.ArgumentParser(description="ASR with recorded audio")
 parser.add_argument("--recording", "-rec", required=True,
@@ -23,66 +25,31 @@ parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda',
 
 args = parser.parse_args()
 
-device = torch.device(args.device)
+wavenet = WaveNet(device=args.device)
 
 print("Loading Models ...")
-tokenizer = (transformers.Wav2Vec2Tokenizer.from_pretrained("facebook/wav2vec2-base-960h") 
-                if args.tokenizer == "" else torch.load(args.tokenizer))
-model = (transformers.Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h") 
-            if args.model == "" else torch.load(args.model))
-
-model.eval()
-model.to(device)
+wavenet.load_model(tokenizer_path=args.tokenizer, model_path=args.model)
 print("Models Loaded ...")
 
-def transcribe_input(tokenizer, model, inputs):
-    inputs = tokenizer(inputs, return_tensors='pt').input_values.to(device)
-    logits = model(inputs).logits
-    predicted_ids = torch.argmax(logits, dim =-1)
-    return tokenizer.decode(predicted_ids[0])
+def print_transcription(transcription):
+    print(transcription, end=" ")
 
-def print_transcriptions(transcriptions):
-    print(transcriptions, end=" ")
-
-def write_to_file(output_file, transcriptions):
-    output_file.write(transcriptions)
-
-def capture_and_transcribe(output_file=None):
-    infer_time = []
-    for block in stream.generator():
-        start = time.time()
-        transcriptions = transcribe_input(tokenizer=tokenizer, 
-                                        model=model, 
-                                        inputs=block)
-        end = time.time()
-        infer_time.append(end-start)
-        if not transcriptions == "":
-            print_transcriptions(transcriptions=transcriptions)
-            if output_file is not None:
-                write_to_file(output_file=output_file, 
-                            transcriptions=transcriptions)
-    return np.mean(infer_time)
-
+async def main():
+    loop = asyncio.get_running_loop()
+    stream = AudioStreaming(audio_path=args.recording, 
+                            blocksize=args.blocksize, 
+                            overlap=args.overlap, 
+                            padding=0, 
+                            sr=16000, 
+                            dtype="float32")
+    async for transcription in wavenet.capture_and_transcribe(stream, loop=loop):
+        if not transcription == "":
+            print_func = functools.partial(print_transcription, transcription=transcription)
+            await loop.run_in_executor(None, print_func)
 
 if __name__=="__main__":
-    stream = utils.AudioStreaming(audio_path=args.recording, 
-                                blocksize=args.blocksize, 
-                                overlap=args.overlap, 
-                                padding=0, 
-                                sr=16000, 
-                                dtype="float32")
-
     print("Start Transcribing...")
     try:
-        start = time.time()
-        if args.output:
-            with open(args.output, "w") as f:
-                infer_time = capture_and_transcribe(f)
-        else:
-            infer_time = capture_and_transcribe()
-        end = time.time()
-        print(f"Total Time Taken: {end-start}sec")
-        print(f"Average Inference Time: {infer_time}sec")
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("Exited")
-

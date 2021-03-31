@@ -1,12 +1,16 @@
-import torch
-import transformers
-import utils.utils as utils
+import sys
+sys.path.insert(0, '../..')
+
+from TheSoundOfAIOSR.stt.wavenet.audiointerface import MicrophoneStreaming
+from TheSoundOfAIOSR.stt.wavenet import WaveNet
 import argparse
+import asyncio
+import functools
 
 parser = argparse.ArgumentParser(description="ASR with live audio")
-parser.add_argument("--model", "-m", default="",required=False,
+parser.add_argument("--model", "-m", default=None,required=False,
                     help="Trained Model path")
-parser.add_argument("--tokenizer", "-t", default="", required=False,
+parser.add_argument("--tokenizer", "-t", default=None, required=False,
                     help="Trained tokenizer path")
 parser.add_argument("--blocksize", "-bs", default=16000, type=int, required=False,
                     help="Size of each audio block to be passed to model")
@@ -17,48 +21,27 @@ parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda',
 
 args = parser.parse_args()
 
-device = torch.device(args.device)
+wavenet = WaveNet(device=args.device)
 
 print("Loading Models ...")
-tokenizer = (transformers.Wav2Vec2Tokenizer.from_pretrained("facebook/wav2vec2-base-960h")
-                if args.tokenizer == "" else torch.load(args.tokenizer))
-model = (transformers.Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h") 
-            if args.model == "" else torch.load(args.model))
-model.eval()
-model.to(device)
+wavenet.load_model(tokenizer_path=args.tokenizer, model_path=args.model)
 print("Models Loaded ...")
 
-def transcribe_input(tokenizer, model, inputs):
-    inputs = tokenizer(inputs, return_tensors='pt').input_values.to(device)
-    logits = model(inputs).logits
-    predicted_ids = torch.argmax(logits, dim =-1)
-    return tokenizer.decode(predicted_ids[0])
+def print_transcription(transcription):
+    print(transcription, end=" ")
 
-def print_transcriptions(transcriptions):
-    print(transcriptions, end=" ")
-
-def write_to_file(output_file, transcriptions):
-    output_file.write(transcriptions)
-
-def capture_and_transcribe(output_file=None):
-    with utils.MicrophoneStreaming(buffersize=args.blocksize) as stream:
-        for block in stream.generator():
-            transcriptions = transcribe_input(tokenizer=tokenizer, 
-                                            model=model, 
-                                            inputs=block)
-            if not transcriptions == "":
-                print_transcriptions(transcriptions=transcriptions)
-                if output_file is not None:
-                    write_to_file(output_file=output_file, 
-                                    transcriptions=transcriptions)
+async def main():
+    loop = asyncio.get_running_loop()
+    stream = MicrophoneStreaming(buffersize=args.blocksize, loop=loop, interface="sd").stream()
+    async for transcription in wavenet.capture_and_transcribe(stream, loop=loop):
+        if not transcription == "":
+            print_func = functools.partial(print_transcription, transcription=transcription)
+            await loop.run_in_executor(None, print_func)
 
 if __name__=="__main__":
     print("Start Transcribing...")
     try:
-        if args.output:
-            with open(args.output, "w") as f:
-                capture_and_transcribe(f)
-        else:
-            capture_and_transcribe()
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("Exited")
+
