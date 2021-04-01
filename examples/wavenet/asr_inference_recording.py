@@ -10,9 +10,9 @@ import functools
 parser = argparse.ArgumentParser(description="ASR with recorded audio")
 parser.add_argument("--recording", "-rec", required=True,
                     help="Trained Model path")
-parser.add_argument("--model", "-m", default="",required=False,
+parser.add_argument("--model", "-m", default=None,required=False,
                     help="Trained Model path")
-parser.add_argument("--tokenizer", "-t", default="", required=False,
+parser.add_argument("--tokenizer", "-t", default=None, required=False,
                     help="Trained tokenizer path")
 parser.add_argument("--blocksize", "-bs", default=16000, type=int, required=False,
                     help="Size of each audio block to be passed to model")
