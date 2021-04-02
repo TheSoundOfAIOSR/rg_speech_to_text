@@ -61,13 +61,13 @@ class SpeechToTextSM(sm.StateMachine):
     async def start_capture_and_transcribe(
                 self,  stt: SpeechToText, source_device: str,
                 logger: logging.Logger):
-        logger.debug("start_capture_and_transcribe from device %s", source_device)
-        return True
+        logger.debug("start_capture_and_transcribe from device %s...", source_device)
+        return await stt.start_capture_and_transcribe(source_device, logger)
 
 
     @sm.event(source=States.capture_and_transcribe,
               target=States.idle,
               return_type=object)
     async def stop_transcription(self,  stt: SpeechToText, logger: logging.Logger):
-        logger.debug("stop_transcription")
-        return "Give me a guitar"
+        logger.debug("stop_transcription...")
+        return await stt.stop_transcription(logger)

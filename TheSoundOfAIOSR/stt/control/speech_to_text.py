@@ -32,7 +32,7 @@ class SpeechToText:
         self._asr_task = None
 
 
-    def _ensure_loop():
+    def _ensure_loop(self):
         if self._loop is None:
             self._loop = asyncio.get_running_loop()
         return self._loop
@@ -48,11 +48,11 @@ class SpeechToText:
 
     async def start_capture_and_transcribe(
             self, sound_device: str, logger: logging.Logger):
-        loop = _ensure_loop()
+        loop = self._ensure_loop()
         start_time = loop.time()
         started_future = loop.create_future()
         self._asr_task = asyncio.create_task(
-            _capture_and_transcribe(sound_device, started_future, loop, logger))
+            self._capture_and_transcribe(sound_device, started_future, loop, logger))
         # we are waiting the result of starting the sound device capture generator
         # for the outcome, which we return
         started = await started_future
@@ -70,7 +70,7 @@ class SpeechToText:
             task.cancel()
             future.set_result(None)
 
-        loop = _ensure_loop()
+        loop = self._ensure_loop()
         start_time = loop.time()
         closed_future = loop.create_future()
         # schedule a threasafe cancel stask (when transcription coroutine is suspended)
