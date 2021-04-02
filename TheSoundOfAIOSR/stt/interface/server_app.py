@@ -15,7 +15,7 @@ def stt_main(device, model, tokenizer, frame_len):
             WaveNet(device=device, tokenzer_path=tokenizer, model_path=model),
             sample_rate=16000,
             frame_len=frame_len,
-            frame_overlap=0, 
+            frame_overlap=1, 
             decoder_offset=0,
             channels=1)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)

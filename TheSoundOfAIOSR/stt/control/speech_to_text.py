@@ -26,7 +26,7 @@ class SpeechToText:
         self._frame_len = frame_len
         self._frame_overlap = frame_overlap
         self._decoder_offset = decoder_offset
-        self._block_size = int(frame_len * frame_overlap)
+        self._block_size = int(frame_len * sample_rate * frame_overlap)
         self._transcription_queue = asyncio.Queue()
         self._loop = None
         self._asr_task = None
@@ -55,6 +55,7 @@ class SpeechToText:
             self._capture_and_transcribe(sound_device, started_future, loop, logger))
         # we are waiting the result of starting the sound device capture generator
         # for the outcome, which we return
+        logger.debug("waiting for capture get started..")
         started = await started_future
         # from this state the capture and transcribe generator coroutine continue its job
         delta_time = loop.time() - start_time
@@ -62,11 +63,11 @@ class SpeechToText:
             logger.debug("starting capture on %s took %s", sound_device, delta_time)
         else:
             logger.warn("starting capture on %s failed in %s", sound_device, delta_time)
-        return starting_outcome
+        return started
 
 
     async def stop_transcription(self, logger:logging.Logger):
-        def _cancel_task(self, task, future):
+        def _cancel_task(task, future):
             task.cancel()
             future.set_result(None)
 
@@ -74,11 +75,11 @@ class SpeechToText:
         start_time = loop.time()
         closed_future = loop.create_future()
         # schedule a threasafe cancel stask (when transcription coroutine is suspended)
-        loop.call_soon_threadsafe(_cancel_task, self.asr_task, closed_future)
+        loop.call_soon_threadsafe(_cancel_task, self._asr_task, closed_future)
         stopped = await closed_future
         delta_closing_time = loop.time() - start_time
         # now we can fetch all the transcription output
-        full_transcription = await asyncio.create_task(_fetch_all_transcription())
+        full_transcription = await asyncio.create_task(self._fetch_all_transcription(logger))
         delta_time = loop.time() - start_time
         logger.debug("stopping transcription took %s, and with text fetch took %s",
                      delta_closing_time, delta_time)
@@ -89,10 +90,11 @@ class SpeechToText:
         fulltext = ""
         try:
             while True:
-                fragment = self.transcription_queue.get_nowait()
+                fragment = self._transcription_queue.get_nowait()
                 fulltext += fragment
                 logger.log(text)
         except asyncio.QueueEmpty:
+            logger.debug("transcribed test is: %s", fulltext)
             return fulltext
 
 
@@ -102,9 +104,13 @@ class SpeechToText:
                                       loop,
                                       logger: logging.Logger):
         try:
+            stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop, interface="sd") \
+                    .stream(logger=logger)
+            logger.debug("microphone stream was created with block_size %s", self._block_size)
             # consuming the audio capture stream and online transcription
-            async for transcribed in asr.capture_and_transcribe(
-                    MicrophoneStreaming(buffersize=self.block_size, interface="sd").stream(),
+            async for transcribed in self._asr.capture_and_transcribe(
+                    stream,
+                    logger,
                     started_future,
                     loop=loop):
                 if not transcribed == "":
@@ -119,4 +125,7 @@ class SpeechToText:
         except asyncio.CancelledError:
             # normal exit, just we would like to have some timestamped debug logs
             logger.debug("_capture_and_transcribe generator was cancelled")
+        except RuntimeError as rerr:
+            logger.error("RuntimeError in _capture_and_transcribe")
+            raise rerr
 

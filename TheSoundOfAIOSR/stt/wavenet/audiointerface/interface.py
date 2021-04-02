@@ -4,6 +4,7 @@ import pyaudio
 import sounddevice as sd
 import numpy as np
 import soundfile as sf
+import logging
 from scipy.signal import resample
 
 class MicrophoneCaptureFailed(Exception):
@@ -11,8 +12,8 @@ class MicrophoneCaptureFailed(Exception):
 
 
 class MicrophoneStreaming_sounddevice:
-    def __init__(self, sr=16000, buffersize=1024, channels=1, device=None, loop=None, dtype="float32"):
-        assert buffersize >=0, "buffersize cannot be 0 or negative"
+    def __init__(self, logger, sr=16000, buffersize=1024, channels=1, device=None, loop=None, dtype="float32"):
+        self._logger = logger
         self._sr = sr
         self._channels = channels
         self._device = device
@@ -20,7 +21,7 @@ class MicrophoneStreaming_sounddevice:
         self._buffersize = buffersize
         self._dtype = dtype
         self._loop = loop
-    
+        
     def __callback(self, indata, frame_count, time_info, status):
         self._loop.call_soon_threadsafe(self._buffer.put_nowait, (indata.copy(), status))
     
@@ -135,7 +136,6 @@ class MicrophoneStreaming_pyaudio:
 
 class MicrophoneStreaming:
     def __init__(self, sr=16000, buffersize=1024, channels=1, device=None, loop=None, interface="sd", dtype="float32"):
-        assert self.__check_valid_interface(interface), "interface can be sd (sounddevice) or pyaudio"
         self._interface = interface
         self._sr = sr
         self._dtype = dtype
@@ -144,9 +144,10 @@ class MicrophoneStreaming:
         self._device = device
         self._loop = loop
 
-    def stream(self):
+    def stream(self, logger: logging.Logger):
         if self._interface=="sd":
-            return MicrophoneStreaming_sounddevice(self._sr, self._buffersize, self._channels, self._device, self._loop, self._dtype)
+            return MicrophoneStreaming_sounddevice(
+                logger, self._sr, self._buffersize, self._channels, self._device, self._loop, self._dtype)
         elif self._interface=="pyaudio":
             return MicrophoneStreaming_pyaudio(self._sr, self._buffersize, self._channels, self._loop, self._dtype)
 
