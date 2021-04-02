@@ -3,7 +3,13 @@ import asyncio
 import logging
 import statesman as sm
 
-from TheSoundOfAIOSR.stt.control.model_loader import load_stt_models as load_models
+from TheSoundOfAIOSR.stt.control.speech_to_text import SpeechToText
+
+
+def load_stt_models(stt: SpeechToText, logger: logging.Logger):
+    logger.debug("pre-loading STT models...")
+    stt.load_model(logger=logger)
+    logger.debug("STT models has been loaded.")
 
 
 class SpeechToTextSM(sm.StateMachine):
@@ -16,21 +22,32 @@ class SpeechToTextSM(sm.StateMachine):
         idle = "Idle..."
 
     @sm.event(None, States.uninitialized)
-    async def reset(self, logger: logging.Logger) -> None:
+    async def reset(self, stt: SpeechToText, logger: logging.Logger) -> None:
         logger.debug("uninitialized action")
 
 
     @sm.event(source=[States.uninitialized, States.models_ready, States.idle],
               target=States.models_preloading, return_type=bool)
-    async def load_stt_models(self, logger: logging.Logger):
+    async def load_stt_models(self,
+                              stt: SpeechToText,
+                              logger: logging.Logger,
+                              timeout_sec: int = 2000):
         logger.debug("preload_models action schedules load stt models ...")
         # since it is a long running process, we execute in threadpool
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, load_models, logger),
-        # it will be resumed only after the load is done
-        await self.models_ready(logger)
-        logger.debug("preload_models action return.")
-        return True
+        start_time = loop.time()
+        future = loop.run_in_executor(None, load_stt_models, stt, logger)
+        try:
+            result = await asyncio.wait_for(future, timeout_sec, loop=loop)
+            # will be resumed only after the model loading is done or timout
+            await self.models_ready(logger)
+            delta_time = loop.time() - start_time
+            logger.debug("preload_models action took %s", delta_time)
+            return True
+        except asyncio.TimeoutError:
+            delta_time = loop.time() - start_time
+            logger.error("preload_models timed out after %s", delta_time)
+            return False
 
     
     @sm.event(source=States.models_preloading, target=States.models_ready)
@@ -42,15 +59,15 @@ class SpeechToTextSM(sm.StateMachine):
               target=States.capture_and_transcribe,
               return_type=bool)
     async def start_capture_and_transcribe(
-                self, source_device: str, logger: logging.Logger):
-        logger.debug("start_capture_and_transcribe from device '{0}'"
-                .format(source_device))
+                self,  stt: SpeechToText, source_device: str,
+                logger: logging.Logger):
+        logger.debug("start_capture_and_transcribe from device %s", source_device)
         return True
 
 
     @sm.event(source=States.capture_and_transcribe,
               target=States.idle,
               return_type=object)
-    async def stop_transcription(self, logger: logging.Logger):
+    async def stop_transcription(self,  stt: SpeechToText, logger: logging.Logger):
         logger.debug("stop_transcription")
         return "Give me a guitar"

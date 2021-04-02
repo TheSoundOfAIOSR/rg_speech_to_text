@@ -4,8 +4,9 @@ import json, logging, asyncio
 from TheSoundOfAIOSR.stt.control.stt_sm import SpeechToTextSM
 
 class SimpleServerInterface(WebsocketServer):
-    def __init__(self, **kwargs):
+    def __init__(self, stt, **kwargs):
         super(SimpleServerInterface, self).__init__(**kwargs)
+        self._stt = stt
         self._register(self.setup_model)
         self._register(self.status)
         self._register(self.start)
@@ -25,8 +26,12 @@ class SimpleServerInterface(WebsocketServer):
     
     async def setup_model(self):
         try:
-            yield {"resp":
-                await self._control.load_stt_models(logger=logging)}
+            successful = await self._control.load_stt_models(
+                    self._stt, logger=logging, timeout_sec = 10.0)
+            if successful: 
+                yield {"resp": True}
+            else:
+                yield {"resp": False, "error": "STT model loading timed out!"}
         except RuntimeError as re:
             yield {"resp": False, "error": "{0}".format(re)}
 
@@ -42,7 +47,7 @@ class SimpleServerInterface(WebsocketServer):
         try:
             yield {"resp":
                 await self._control.start_capture_and_transcribe(
-                        source_device=name, logger=logging)}
+                        self._stt, source_device=name, logger=logging)}
         except RuntimeError as re:
             yield {"reps": False, "error": "{0}".format(re)}
     
@@ -50,13 +55,6 @@ class SimpleServerInterface(WebsocketServer):
     async def stop(self):
         try:
             yield {"resp":
-                await self._control.stop_transcription(logger=logging)}
+                await self._control.stop_transcription(self._stt, logger=logging)}
         except RuntimeError as re:
             yield {"reps": False, "error": "{0}".format(re)}
-
-
-    async def fetch(self):
-        logging.debug("fetch")
-        self._control.last_transcription
-        yield {"resp": f"{self._control.last_transcription}"
-                         if self._control.last_transcription else ''}

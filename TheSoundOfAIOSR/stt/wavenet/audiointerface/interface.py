@@ -6,6 +6,10 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import resample
 
+class MicrophoneCaptureFailed(Exception):
+    pass
+
+
 class MicrophoneStreaming_sounddevice:
     def __init__(self, sr=16000, buffersize=1024, channels=1, device=None, loop=None, dtype="float32"):
         assert buffersize >=0, "buffersize cannot be 0 or negative"
@@ -30,7 +34,7 @@ class MicrophoneStreaming_sounddevice:
                 if(time.time() - t) > rec:
                     break 
 
-    async def generator(self):
+    async def generator(self, future: asyncio.Future = None):
         if self._loop is None:
             self._loop = asyncio.get_running_loop()
         stream = sd.InputStream(
@@ -42,13 +46,30 @@ class MicrophoneStreaming_sounddevice:
             blocksize=self._buffersize
             )
         with stream:
-            while True:
+            if not stream.active:
+                # if it was not called start() or exception was raised
+                # in the audio callback
+                if future: 
+                    # if the future is waiting for the start or any failure
+                    # set the exception
+                    future.set_exception(f"Could not open the {self._device} capture device")
+                
+                # coroutine also will be notified
+                raise MicrophoneCaptureFailed
+            else:
+                if future:
+                    # if the future is waiting for the start or any failure
+                    # set True meaning that the microphone was successfully opened
+                    future.set_result(True)
+            
+            while stream.active:
                 try:
                     indata, status = await self._buffer.get()
                     yield indata.squeeze(), status
                 except asyncio.QueueEmpty:
-                    self._loop.stop()
+                    self._loop.stop() # TODO: I am not sure about this
                     break
+
 
 class MicrophoneStreaming_pyaudio:
     def __init__(self, sr=16000, buffersize=1024, channels=1, loop=None, dtype="float32"):

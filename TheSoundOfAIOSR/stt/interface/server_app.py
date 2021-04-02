@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+import sys
+sys.path.insert(0, '.')
+
+import asyncio
+import argparse
+
+from TheSoundOfAIOSR.stt.interface.wsserver import SimpleServerInterface
+from TheSoundOfAIOSR.stt.wavenet.wavenet import WaveNet
+from TheSoundOfAIOSR.stt.control.speech_to_text import SpeechToText
+
+
+def stt_main(device, model, tokenizer, frame_len):
+    stt = SpeechToText(
+            WaveNet(device=device, tokenzer_path=tokenizer, model_path=model),
+            sample_rate=16000,
+            frame_len=frame_len,
+            frame_overlap=0, 
+            decoder_offset=0,
+            channels=1)
+    srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(srv.run())
+    loop.run_forever()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="ASR with live audio")
+    parser.add_argument("--model", "-m", default=None,required=False,
+                        help="Trained Model path")
+    parser.add_argument("--tokenizer", "-t", default=None, required=False,
+                        help="Trained tokenizer path")
+    parser.add_argument("--frame_len", "-fl", default=1.0, type=float, required=False,
+                        help="Duration of a buffer in seconds (blocksize = frame_len * sample_rate)")
+    parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda', 'cpu'], required=False,
+                        help="device to use for inferencing")
+    parser.add_argument("--hostname", "-host", default='localhost', type=str, required=False,
+                        help="Host where the websocket server is to be bound")
+    parser.add_argument("--port", "-p", default=8786, type=int, required=False,
+                        help="Port where the websocket server is to be bound")
+    args = parser.parse_args()
+
+    stt_main(args.device, args.model, args.tokenizer, args.frame_len)
