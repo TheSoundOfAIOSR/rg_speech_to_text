@@ -15,12 +15,26 @@ async def main(**kwargs):
 
     # we simulate the asynchronous GUI, 
     # waiting 20 seconds or interrupt by keyboard in this example
-    for i in range(20, 0, -1):
+    for i in range(5, 0, -1):
         print(i)
         await asyncio.sleep(1)
 
     # Somewhere the GUI cancels the audio task
     audio_task.cancel()
+    await asyncio.sleep(1)
+
+    audio_task = asyncio.create_task(capture_and_playback(**kwargs))
+    for i in range(5, 0, -1):
+        print(i)
+        await asyncio.sleep(1)
+    audio_task.cancel()
+
+    audio_task = asyncio.create_task(capture_and_playback(**kwargs))
+    for i in range(5, 0, -1):
+        print(i)
+        await asyncio.sleep(1)
+    audio_task.cancel()
+
     try:
         await audio_task
     except asyncio.CancelledError:
