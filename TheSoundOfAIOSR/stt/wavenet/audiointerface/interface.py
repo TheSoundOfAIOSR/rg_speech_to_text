@@ -64,12 +64,8 @@ class MicrophoneStreaming_sounddevice:
                     future.set_result(True)
             
             while stream.active:
-                try:
-                    indata, status = await self._buffer.get()
-                    yield indata.squeeze(), status
-                except asyncio.QueueEmpty:
-                    self._loop.stop() # TODO: I am not sure about this
-                    break
+                indata, status = await self._buffer.get()
+                yield indata.squeeze(), status
 
 
 class MicrophoneStreaming_pyaudio:
