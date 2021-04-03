@@ -89,6 +89,7 @@ class SpeechToText:
     async def _fetch_all_transcription(self, logger: logging.Logger):
         fulltext = ""
         try:
+            logger.debug("queue size: %s", self._transcription_queue.qsize())
             while True:
                 fragment = self._transcription_queue.get_nowait()
                 fulltext += fragment
@@ -113,6 +114,7 @@ class SpeechToText:
                     logger,
                     started_future,
                     loop=loop):
+                print(transcribed, end='')
                 if not transcribed == "":
                     try:
                         self.transcription_queue.put_nowait(transcribed)

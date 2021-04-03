@@ -38,6 +38,7 @@ class MicrophoneStreaming_sounddevice:
     async def generator(self, future: asyncio.Future = None):
         if self._loop is None:
             self._loop = asyncio.get_running_loop()
+        self._logger.debug("startin the microfone generator...")
         stream = sd.InputStream(
             samplerate=self._sr,
             device=self._device,
@@ -48,6 +49,7 @@ class MicrophoneStreaming_sounddevice:
             )
         with stream:
             if not stream.active:
+                self._logger.debug("stream not active")
                 # if it was not called start() or exception was raised
                 # in the audio callback
                 if future: 

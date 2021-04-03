@@ -32,6 +32,8 @@ class WaveNet:
             loop = asyncio.get_running_loop()
         logger.debug("WaveNet capture_and_transcribe .. ")
         async for block, status in stream_obj.generator(started_future):
+            logger.debug("block arrived")
             process_func = functools.partial(self.transcribe, inputs=block)
             transcriptions = await loop.run_in_executor(None, process_func)
+            logger.debug("transcriptions out")
             yield transcriptions
