@@ -4,6 +4,7 @@ sys.path.insert(0, '.')
 
 import asyncio
 import argparse
+import logging
 
 from TheSoundOfAIOSR.stt.interface.wsserver import SimpleServerInterface
 from TheSoundOfAIOSR.stt.wavenet.wavenet import WaveNet
@@ -20,8 +21,11 @@ def stt_main(device, model, tokenizer, frame_len):
             channels=1)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(srv.run())
-    loop.run_forever()
+    try:
+        loop.run_until_complete(srv.run())
+    except RuntimeError:
+        logging.info("Successfully shutdown the Speech To Text service.")
+
 
 
 if __name__ == "__main__":
