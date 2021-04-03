@@ -19,14 +19,14 @@ class SpeechToTextSM(sm.StateMachine):
         models_preloading = "Preloading the models..."
         models_ready = "The models are preloaded and ready."
         capture_and_transcribe = "Capture and transcribe..."
-        idle = "Idle..."
+
 
     @sm.event(None, States.uninitialized)
     async def reset(self, stt: SpeechToText, logger: logging.Logger) -> None:
         logger.debug("uninitialized action")
 
 
-    @sm.event(source=[States.uninitialized, States.models_ready, States.idle],
+    @sm.event(source=[States.uninitialized, States.models_ready],
               target=States.models_preloading, return_type=bool)
     async def load_stt_models(self,
                               stt: SpeechToText,
@@ -61,13 +61,11 @@ class SpeechToTextSM(sm.StateMachine):
     async def start_capture_and_transcribe(
                 self,  stt: SpeechToText, source_device: str,
                 logger: logging.Logger):
-        logger.debug("start_capture_and_transcribe from device %s...", source_device)
         return await stt.start_capture_and_transcribe(source_device, logger)
 
 
     @sm.event(source=States.capture_and_transcribe,
-              target=States.idle,
+              target=States.models_ready,
               return_type=object)
     async def stop_transcription(self,  stt: SpeechToText, logger: logging.Logger):
-        logger.debug("stop_transcription...")
         return await stt.stop_transcription(logger)

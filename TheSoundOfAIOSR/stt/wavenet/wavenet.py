@@ -1,7 +1,6 @@
 import torch
 import asyncio
 import functools
-import logging
 import transformers
 
 class WaveNet:
@@ -26,14 +25,13 @@ class WaveNet:
         predicted_ids = torch.argmax(logits, dim =-1)
         return self.tokenizer.decode(predicted_ids[0])
 
-    async def capture_and_transcribe(self, stream_obj, logger: logging.Logger,
-                                     started_future: asyncio.Future = None, loop = None):
+    async def capture_and_transcribe(self,
+                                     stream_obj,
+                                     started_future: asyncio.Future = None,
+                                     loop = None):
         if loop is None:
             loop = asyncio.get_running_loop()
-        logger.debug("WaveNet capture_and_transcribe .. ")
         async for block, status in stream_obj.generator(started_future):
-            logger.debug("block arrived")
             process_func = functools.partial(self.transcribe, inputs=block)
             transcriptions = await loop.run_in_executor(None, process_func)
-            logger.debug("transcriptions out")
             yield transcriptions

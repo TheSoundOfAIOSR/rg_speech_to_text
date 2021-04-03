@@ -9,6 +9,12 @@ from examples.interface.wsclient import SimpleClientInterface
 
 c = SimpleClientInterface(host="localhost", port=8786)
 
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(threadName)s %(message)s',
+    level=logging.DEBUG,
+    datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
+
 async def main():
     ...
 

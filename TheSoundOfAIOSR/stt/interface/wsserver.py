@@ -55,7 +55,7 @@ class SimpleServerInterface(WebsocketServer):
                 await self._control.start_capture_and_transcribe(
                         self._stt, source_device=name, logger=logger)}
         except RuntimeError as re:
-            yield {"reps": False, "error": "{0}".format(re)}
+            yield {"resp": False, "error": "{0}".format(re)}
     
 
     async def stop(self):
@@ -63,4 +63,4 @@ class SimpleServerInterface(WebsocketServer):
             yield {"resp":
                 await self._control.stop_transcription(self._stt, logger=logger)}
         except RuntimeError as re:
-            yield {"reps": False, "error": "{0}".format(re)}
+            yield {"resp": False, "error": "{0}".format(re)}

@@ -48,6 +48,7 @@ class SpeechToText:
 
     async def start_capture_and_transcribe(
             self, sound_device: str, logger: logging.Logger):
+        logger.debug("start_capture_and_transcribe on %s", sound_device)
         loop = self._ensure_loop()
         start_time = loop.time()
         started_future = loop.create_future()
@@ -55,7 +56,6 @@ class SpeechToText:
             self._capture_and_transcribe(sound_device, started_future, loop, logger))
         # we are waiting the result of starting the sound device capture generator
         # for the outcome, which we return
-        logger.debug("waiting for capture get started..")
         started = await started_future
         # from this state the capture and transcribe generator coroutine continue its job
         delta_time = loop.time() - start_time
@@ -89,13 +89,11 @@ class SpeechToText:
     async def _fetch_all_transcription(self, logger: logging.Logger):
         fulltext = ""
         try:
-            logger.debug("queue size: %s", self._transcription_queue.qsize())
             while True:
                 fragment = self._transcription_queue.get_nowait()
-                fulltext += fragment
-                logger.log(text)
+                fulltext += fragment + ' '
         except asyncio.QueueEmpty:
-            logger.debug("transcribed test is: %s", fulltext)
+            logger.debug("transcribed text is: %s", fulltext)
             return fulltext
 
 
@@ -107,27 +105,19 @@ class SpeechToText:
         try:
             stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop, interface="sd") \
                     .stream(logger=logger)
-            logger.debug("microphone stream was created with block_size %s", self._block_size)
             # consuming the audio capture stream and online transcription
             async for transcribed in self._asr.capture_and_transcribe(
-                    stream,
-                    logger,
-                    started_future,
-                    loop=loop):
-                print(transcribed, end='')
+                        stream, started_future, loop=loop):
                 if not transcribed == "":
                     try:
-                        self.transcription_queue.put_nowait(transcribed)
+                        self._transcription_queue.put_nowait(transcribed)
                     except asyncio.QueueFull as fullErr:
                         logger.warning("The transcription queue is too full.")
                         raise fullErr
         except MicrophoneCaptureFailed as captureErr:
-            logger.error("_capture_and_transcribe was not able to capture from {0}", sound_device)
+            logger.error("Unable to capture from {0}", sound_device)
             raise captureErr
-        except asyncio.CancelledError:
-            # normal exit, just we would like to have some timestamped debug logs
-            logger.debug("_capture_and_transcribe generator was cancelled")
         except RuntimeError as rerr:
-            logger.error("RuntimeError in _capture_and_transcribe")
+            logger.error("RuntimeError in capture and transcribe")
             raise rerr
 
