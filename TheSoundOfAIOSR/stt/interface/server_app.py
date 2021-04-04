@@ -7,7 +7,7 @@ import argparse
 import logging
 
 from TheSoundOfAIOSR.stt.interface.wsserver import SimpleServerInterface
-from TheSoundOfAIOSR.stt.wavenet.wavenet import WaveNet
+from TheSoundOfAIOSR.stt.wavenet.inference import WaveNet
 from TheSoundOfAIOSR.stt.control.speech_to_text import SpeechToText
 
 logging.basicConfig(

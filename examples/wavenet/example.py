@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, '../..')
 
 import asyncio
-from TheSoundOfAIOSR.stt.wavenet.audiointerface import MicrophoneStreaming, AudioStreaming, AudioReader
+from TheSoundOfAIOSR.audiointerface.capture import MicrophoneStreaming, AudioStreaming, AudioReader
 
 ## audio path to load
 audio_path = "input/Achievements_of_the_Democratic_Party_(Homer_S._Cummings).ogg"
