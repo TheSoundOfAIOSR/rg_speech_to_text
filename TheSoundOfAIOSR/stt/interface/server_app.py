@@ -10,6 +10,12 @@ from TheSoundOfAIOSR.stt.interface.wsserver import SimpleServerInterface
 from TheSoundOfAIOSR.stt.wavenet.wavenet import WaveNet
 from TheSoundOfAIOSR.stt.control.speech_to_text import SpeechToText
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)-8s %(threadName)s %(message)s',
+    level=logging.DEBUG,
+    datefmt='%Y-%m-%d %H:%M:%S')
+
+logger = logging.getLogger(__name__)
 
 def stt_main(device, model, tokenizer, frame_len):
     stt = SpeechToText(
@@ -24,7 +30,7 @@ def stt_main(device, model, tokenizer, frame_len):
     try:
         loop.run_until_complete(srv.run())
     except RuntimeError:
-        logging.info("Successfully shutdown the Speech To Text service.")
+        logger.info("Successfully shutdown the Speech To Text service.")
 
 
 

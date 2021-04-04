@@ -6,6 +6,7 @@ import logging
 from TheSoundOfAIOSR.stt.wavenet.audiointerface.interface import MicrophoneCaptureFailed
 from TheSoundOfAIOSR.stt.wavenet.audiointerface.interface import MicrophoneStreaming
 
+logger = logging.getLogger('sptt')
 
 class SpeechToText:
     def __init__(self, asr, sample_rate: int,
@@ -38,22 +39,18 @@ class SpeechToText:
         return self._loop
 
 
-    def load_model(self, logger: logging.Logger):
+    def load_model(self):
         self._asr.load_model()
 
 
-    async def transcribe_audio_file(self, audio_file_name: str, logger: logging.Logger):
-        ...        
-
-
     async def start_capture_and_transcribe(
-            self, sound_device: str, logger: logging.Logger):
+            self, sound_device: str):
         logger.debug("start_capture_and_transcribe on %s", sound_device)
         loop = self._ensure_loop()
         start_time = loop.time()
         started_future = loop.create_future()
         self._asr_task = asyncio.create_task(
-            self._capture_and_transcribe(sound_device, started_future, loop, logger))
+            self._capture_and_transcribe(sound_device, started_future, loop))
         # we are waiting the result of starting the sound device capture generator
         # for the outcome, which we return
         started = await started_future
@@ -66,7 +63,7 @@ class SpeechToText:
         return started
 
 
-    async def stop_transcription(self, logger:logging.Logger):
+    async def stop_transcription(self):
         def _cancel_task(task, future):
             task.cancel()
             future.set_result(None)
@@ -79,14 +76,14 @@ class SpeechToText:
         stopped = await closed_future
         delta_closing_time = loop.time() - start_time
         # now we can fetch all the transcription output
-        full_transcription = await asyncio.create_task(self._fetch_all_transcription(logger))
+        full_transcription = await asyncio.create_task(self._fetch_all_transcription())
         delta_time = loop.time() - start_time
         logger.debug("stopping transcription took %s, and with text fetch took %s",
                      delta_closing_time, delta_time)
         return full_transcription
 
 
-    async def _fetch_all_transcription(self, logger: logging.Logger):
+    async def _fetch_all_transcription(self):
         fulltext = ""
         try:
             while True:
@@ -100,11 +97,10 @@ class SpeechToText:
     async def _capture_and_transcribe(self,
                                       sound_device: str,
                                       started_future: asyncio.Future,
-                                      loop,
-                                      logger: logging.Logger):
+                                      loop):
         try:
             stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop, interface="sd") \
-                    .stream(logger=logger)
+                    .stream()
             # consuming the audio capture stream and online transcription
             async for transcribed in self._asr.capture_and_transcribe(
                         stream, started_future, loop=loop):

@@ -38,14 +38,14 @@ async def _example_sequential_controller(control):
     a chosen event sequence scenario will be executed as it would be
     called by a user.
     """
-    await silent(control.load_stt_models(logger=logger))
+    await silent(control.load_stt_models())
     await wait_and_show_states(15)
 
     await silent(control.start_capture_and_transcribe(
-        source_device="Mic 1", logger=logger))
+        source_device="Mic 1"))
     await wait_and_show_states(5)
 
-    await silent(control.stop_transcription(logger=logger))
+    await silent(control.stop_transcription())
     await wait_and_show_states(5)
 
 

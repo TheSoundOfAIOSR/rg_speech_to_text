@@ -4,16 +4,15 @@ import pyaudio
 import sounddevice as sd
 import numpy as np
 import soundfile as sf
-import logging
 from scipy.signal import resample
+
 
 class MicrophoneCaptureFailed(Exception):
     pass
 
 
 class MicrophoneStreaming_sounddevice:
-    def __init__(self, logger, sr=16000, buffersize=1024, channels=1, device=None, loop=None, dtype="float32"):
-        self._logger = logger
+    def __init__(self, sr=16000, buffersize=1024, channels=1, device=None, loop=None, dtype="float32"):
         self._sr = sr
         self._channels = channels
         self._device = device
@@ -140,10 +139,10 @@ class MicrophoneStreaming:
         self._device = device
         self._loop = loop
 
-    def stream(self, logger: logging.Logger):
+    def stream(self):
         if self._interface=="sd":
             return MicrophoneStreaming_sounddevice(
-                logger, self._sr, self._buffersize, self._channels, self._device, self._loop, self._dtype)
+                self._sr, self._buffersize, self._channels, self._device, self._loop, self._dtype)
         elif self._interface=="pyaudio":
             return MicrophoneStreaming_pyaudio(self._sr, self._buffersize, self._channels, self._loop, self._dtype)
 

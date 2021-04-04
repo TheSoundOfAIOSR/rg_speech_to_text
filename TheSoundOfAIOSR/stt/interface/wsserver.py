@@ -3,12 +3,6 @@ import json, logging, asyncio
 
 from TheSoundOfAIOSR.stt.control.stt_sm import SpeechToTextSM
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(threadName)s %(message)s',
-    level=logging.DEBUG,
-    datefmt='%Y-%m-%d %H:%M:%S')
-logger = logging.getLogger(__name__)
-
 class SimpleServerInterface(WebsocketServer):
     def __init__(self, stt, **kwargs):
         super(SimpleServerInterface, self).__init__(**kwargs)
@@ -33,7 +27,7 @@ class SimpleServerInterface(WebsocketServer):
     async def setup_model(self):
         try:
             successful = await self._control.load_stt_models(
-                    self._stt, logger=logger, timeout_sec = 10.0)
+                    self._stt, timeout_sec = 10.0)
             if successful: 
                 yield {"resp": True}
             else:
@@ -53,7 +47,7 @@ class SimpleServerInterface(WebsocketServer):
         try:
             yield {"resp":
                 await self._control.start_capture_and_transcribe(
-                        self._stt, source_device=name, logger=logger)}
+                        self._stt, source_device=name)}
         except RuntimeError as re:
             yield {"resp": False, "error": "{0}".format(re)}
     
@@ -61,6 +55,6 @@ class SimpleServerInterface(WebsocketServer):
     async def stop(self):
         try:
             yield {"resp":
-                await self._control.stop_transcription(self._stt, logger=logger)}
+                await self._control.stop_transcription(self._stt)}
         except RuntimeError as re:
             yield {"resp": False, "error": "{0}".format(re)}
