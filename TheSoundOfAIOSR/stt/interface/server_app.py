@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def stt_main(device, model, tokenizer, frame_len):
     stt = SpeechToText(
-            WaveNet(device=device, tokenzer_path=tokenizer, model_path=model),
+            WaveNet(device=device, tokenizer_path=tokenizer, model_path=model),
             sample_rate=16000,
             frame_len=frame_len,
             frame_overlap=1, 
