@@ -1,7 +1,11 @@
 '''
 Example Snippets
 '''
-from audiointerface import MicrophoneStreaming, AudioStreaming, AudioReader
+import sys
+sys.path.insert(0, '../..')
+
+import asyncio
+from TheSoundOfAIOSR.stt.wavenet.audiointerface import MicrophoneStreaming, AudioStreaming, AudioReader
 
 ## audio path to load
 audio_path = "input/Achievements_of_the_Democratic_Party_(Homer_S._Cummings).ogg"
@@ -32,10 +36,8 @@ for block in stream.generator():
 filename = "hello.wav"
 duration = 10
 ## saving recording to audio file
-
-## sounddevice interface
 async def save_audio():
-    stream = MicrophoneStreaming(interface="sd").stream()
+    stream = MicrophoneStreaming()
     await stream.record_to_file(filename=filename, duration=duration)
 
 print("start recording")
@@ -44,37 +46,13 @@ try:
 except KeyboardInterrupt:
     print("Exited")
 
-## pyaudio interface
-async def save_audio():
-    async with MicrophoneStreaming(interface="pyaudio").stream() as stream:
-        await stream.record_to_file(filename=filename, duration=duration)
 
-print("start recording")
-try:
-    asyncio.run(save_audio())
-except KeyboardInterrupt:
-    print("Exited")
-
-
-##  microphone streaming
-## sounddevice interface
+#  microphone streaming
 async def capture():
-    ## create a sounddevice interface
-    stream = MicrophoneStreaming(interface="sd").stream()
+    stream = MicrophoneStreaming()
     async for block, status in stream.generator():
         # process data here
         print(len(block))
-try:
-    asyncio.run(capture())
-except KeyboardInterrupt:
-    print("Exited")
-
-## pyaudio interface
-async def capture():
-    async with MicrophoneStreaming(interface="pyaudio").stream() as stream:
-        async for block, status in stream.generator():
-            # process data here
-            print(len(block))
 try:
     asyncio.run(capture())
 except KeyboardInterrupt:

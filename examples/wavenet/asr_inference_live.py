@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../..')
 
-from TheSoundOfAIOSR.stt.wavenet.audiointerface import MicrophoneStreaming
+from TheSoundOfAIOSR.audiointerface import MicrophoneStreaming
 from TheSoundOfAIOSR.stt.wavenet import WaveNet
 import argparse
 import asyncio
@@ -32,7 +32,7 @@ def print_transcription(transcription):
 
 async def main():
     loop = asyncio.get_running_loop()
-    stream = MicrophoneStreaming(buffersize=args.blocksize, loop=loop, interface="sd").stream()
+    stream = MicrophoneStreaming(buffersize=args.blocksize, loop=loop)
     async for transcription in wavenet.capture_and_transcribe(stream, loop=loop):
         if not transcription == "":
             print_func = functools.partial(print_transcription, transcription=transcription)
