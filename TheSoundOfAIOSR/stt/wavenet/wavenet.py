@@ -4,9 +4,9 @@ import functools
 import transformers
 
 class WaveNet:
-    def __init__(self, device="cpu", tokenzer_path=None, model_path=None):
+    def __init__(self, device="cpu", tokenizer_path=None, model_path=None):
         self.device = torch.device(device)
-        self.tokenizer_path = tokenzer_path
+        self.tokenizer_path = tokenizer_path
         self.model_path = model_path
 
     def load_model(self):

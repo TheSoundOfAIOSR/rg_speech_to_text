@@ -25,10 +25,10 @@ parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda',
 
 args = parser.parse_args()
 
-wavenet = WaveNet(device=args.device)
+wavenet = WaveNet(device=args.device, tokenizer_path=args.tokenizer, model_path=args.model)
 
 print("Loading Models ...")
-wavenet.load_model(tokenizer_path=args.tokenizer, model_path=args.model)
+wavenet.load_model()
 print("Models Loaded ...")
 
 def print_transcription(transcription):
