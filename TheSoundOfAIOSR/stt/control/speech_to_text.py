@@ -3,8 +3,8 @@ import functools
 import logging
 
 
-from TheSoundOfAIOSR.stt.wavenet.audiointerface.interface import MicrophoneCaptureFailed
-from TheSoundOfAIOSR.stt.wavenet.audiointerface.interface import MicrophoneStreaming
+from TheSoundOfAIOSR.audiointerface.capture import MicrophoneCaptureFailed
+from TheSoundOfAIOSR.audiointerface.capture import MicrophoneStreaming
 
 logger = logging.getLogger('sptt')
 
@@ -99,8 +99,7 @@ class SpeechToText:
                                       started_future: asyncio.Future,
                                       loop):
         try:
-            stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop, interface="sd") \
-                    .stream()
+            stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop)
             # consuming the audio capture stream and online transcription
             async for transcribed in self._asr.capture_and_transcribe(
                         stream, started_future, loop=loop):

@@ -43,8 +43,7 @@ class MicrophoneStreaming:
             channels=self._channels,
             callback=self.__callback,
             dtype=self._dtype,
-            blocksize=self._buffersize
-            )
+            blocksize=self._buffersize)
         with stream:
             if not stream.active:
                 # if it was not called start() or exception was raised
@@ -65,6 +64,7 @@ class MicrophoneStreaming:
             while stream.active:
                 indata, status = await self._buffer.get()
                 yield indata.squeeze(), status
+
 
 class AudioStreaming:
     def __init__(self, audio_path, blocksize, sr=16000, overlap=0, padding=None, dtype="float32"):

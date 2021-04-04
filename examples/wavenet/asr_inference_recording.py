@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../..')
 
-from TheSoundOfAIOSR.audiointerface import AudioStreaming
+from TheSoundOfAIOSR.audiointerface.capture import AudioStreaming
 from TheSoundOfAIOSR.stt.wavenet import WaveNet
 import argparse
 import asyncio
