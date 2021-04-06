@@ -21,7 +21,8 @@ parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda',
 
 args = parser.parse_args()
 
-wavenet = WaveNet(device=args.device, tokenizer_path=args.tokenizer, model_path=args.model)
+wavenet = WaveNet(device=args.device, tokenizer_path=args.tokenizer, model_path=args.model,
+                  use_vad=True)
 
 print("Loading Models ...")
 wavenet.load_model()
@@ -29,6 +30,7 @@ print("Models Loaded ...")
 
 def print_transcription(transcription):
     print(transcription, end=" ")
+    sys.stdout.flush()
 
 async def main():
     loop = asyncio.get_running_loop()

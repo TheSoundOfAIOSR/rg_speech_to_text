@@ -86,8 +86,6 @@ class AudioStreaming:
             yield chunk, self._orig_sr
 
     async def __resample_file(self, array, original_sr, target_sr):
-        #print(array[:10])
-        # sample = resample(array, num=int(len(array)*target_sr/original_sr))
         resampling_transform = Resample(orig_freq=original_sr,
                                         new_freq=target_sr)
 
