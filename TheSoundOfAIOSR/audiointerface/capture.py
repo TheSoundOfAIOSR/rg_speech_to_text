@@ -6,6 +6,9 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import resample
 
+import torch
+from torchaudio.transforms import Resample
+
 
 class MicrophoneCaptureFailed(Exception):
     pass
@@ -83,7 +86,12 @@ class AudioStreaming:
             yield chunk, self._orig_sr
 
     async def __resample_file(self, array, original_sr, target_sr):
-        sample = resample(array, num=int(len(array)*target_sr/original_sr))
+        #print(array[:10])
+        # sample = resample(array, num=int(len(array)*target_sr/original_sr))
+        resampling_transform = Resample(orig_freq=original_sr,
+                                        new_freq=target_sr)
+
+        sample = resampling_transform(torch.Tensor([array])).squeeze()
         return sample
 
 
