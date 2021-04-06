@@ -19,7 +19,7 @@ class WaveNet:
         self.model = model
         self.tokenizer = tokenizer
 
-    def transcribe(self, inputs):
+    def _transcribe(self, inputs):
         inputs = self.tokenizer(inputs, return_tensors='pt').input_values.to(self.device)
         logits = self.model(inputs).logits
         predicted_ids = torch.argmax(logits, dim =-1)
@@ -32,6 +32,11 @@ class WaveNet:
         if loop is None:
             loop = asyncio.get_running_loop()
         async for block, status in stream_obj.generator(started_future):
-            process_func = functools.partial(self.transcribe, inputs=block)
+            process_func = functools.partial(self._transcribe, inputs=block)
             transcriptions = await loop.run_in_executor(None, process_func)
             yield transcriptions
+
+    async def transcribe(self, input, loop = None):
+        process_func = functools.partial(self._transcribe, inputs=input)
+        return await loop.run_in_executor(None, process_func)
+    

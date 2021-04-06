@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import numpy
 
 
 from TheSoundOfAIOSR.audiointerface.capture import MicrophoneCaptureFailed
@@ -11,7 +12,7 @@ logger = logging.getLogger('sptt')
 class SpeechToText:
     def __init__(self, asr, sample_rate: int,
                  frame_len: float, frame_overlap: int, 
-                 decoder_offset=0, channels=1):
+                 decoder_offset=0, channels=1, offline_mode=False):
         """ 
         Args:
             asr - ASR engine
@@ -19,7 +20,8 @@ class SpeechToText:
             frame_len - duration of signal frame, seconds
             frame_overlap - frame overlap (for example 2)
             decoder_offset - decoder offset
-            channels - number of audio channels (expect mono signal)  
+            channels - number of audio channels (expect mono signal)
+            offline_mode - first capture all, then transcribe at stop
         """
         self._asr = asr
         self._sample_rate = sample_rate
@@ -27,8 +29,9 @@ class SpeechToText:
         self._frame_len = frame_len
         self._frame_overlap = frame_overlap
         self._decoder_offset = decoder_offset
+        self._offline_mode = offline_mode
         self._block_size = int(frame_len * sample_rate * frame_overlap)
-        self._transcription_queue = asyncio.Queue()
+        self._buffer_queue = asyncio.Queue()
         self._loop = None
         self._asr_task = None
 
@@ -45,21 +48,28 @@ class SpeechToText:
 
     async def start_capture_and_transcribe(
             self, sound_device: str):
-        logger.debug("start_capture_and_transcribe on %s", sound_device)
         loop = self._ensure_loop()
         start_time = loop.time()
         started_future = loop.create_future()
-        self._asr_task = asyncio.create_task(
-            self._capture_and_transcribe(sound_device, started_future, loop))
+        
+        if self._offline_mode:
+            logger.debug("start capturing in  offline mode from %s", sound_device)
+            self._asr_task = asyncio.create_task(
+                self._capture_offline(sound_device, started_future, loop))
+        else:
+            logger.debug("start capture and transcribe online from %s", sound_device)
+            self._asr_task = asyncio.create_task(
+                self._capture_and_transcribe(sound_device, started_future, loop))
+        
         # we are waiting the result of starting the sound device capture generator
         # for the outcome, which we return
         started = await started_future
         # from this state the capture and transcribe generator coroutine continue its job
         delta_time = loop.time() - start_time
         if started:
-            logger.debug("starting capture on %s took %s", sound_device, delta_time)
+            logger.debug("capturing on %s took %s", sound_device, delta_time)
         else:
-            logger.warn("starting capture on %s failed in %s", sound_device, delta_time)
+            logger.warn("capturing on %s failed in %s", sound_device, delta_time)
         return started
 
 
@@ -76,7 +86,14 @@ class SpeechToText:
         stopped = await closed_future
         delta_closing_time = loop.time() - start_time
         # now we can fetch all the transcription output
-        full_transcription = await asyncio.create_task(self._fetch_all_transcription())
+        
+        if self._offline_mode:
+            full_transcription = await asyncio.create_task(
+                    self._asr.transcribe(await self._fetch_all_audio(), loop))
+        else:
+            full_transcription = await asyncio.create_task(
+                    self._fetch_all_transcription())
+        
         delta_time = loop.time() - start_time
         logger.debug("stopping transcription took %s, and with text fetch took %s",
                      delta_closing_time, delta_time)
@@ -87,7 +104,7 @@ class SpeechToText:
         fulltext = ""
         try:
             while True:
-                fragment = self._transcription_queue.get_nowait()
+                fragment = self._buffer_queue.get_nowait()
                 fulltext += fragment + ' '
         except asyncio.QueueEmpty:
             logger.debug("transcribed text is: %s", fulltext)
@@ -99,13 +116,16 @@ class SpeechToText:
                                       started_future: asyncio.Future,
                                       loop):
         try:
+            #logger.debug("_capture_and_transcribe ...... ")
             stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop)
+            #logger.debug("MicrophoneStreaming created ")
             # consuming the audio capture stream and online transcription
             async for transcribed in self._asr.capture_and_transcribe(
                         stream, started_future, loop=loop):
+                #logger.print(transcribed)
                 if not transcribed == "":
                     try:
-                        self._transcription_queue.put_nowait(transcribed)
+                        self._buffer_queue.put_nowait(transcribed)
                     except asyncio.QueueFull as fullErr:
                         logger.warning("The transcription queue is too full.")
                         raise fullErr
@@ -115,4 +135,34 @@ class SpeechToText:
         except RuntimeError as rerr:
             logger.error("RuntimeError in capture and transcribe")
             raise rerr
+
+
+    async def _capture_offline(self, 
+                               sound_device: str,
+                               started_future: asyncio.Future,
+                               loop):
+        try:
+            stream = MicrophoneStreaming(buffersize=self._block_size, loop=loop)
+            async for block, status in stream.generator(started_future):
+                try:
+                    self._buffer_queue.put_nowait(block)
+                except asyncio.QueueFull as fullErr:
+                    logger.warning("The audio buffer queue is too full.")
+                    raise fullErr
+        except MicrophoneCaptureFailed as captureErr:
+            logger.error("Unable to capture from {0}", sound_device)
+            raise captureErr
+        except RuntimeError as rerr:
+            logger.error("RuntimeError in capture and transcribe")
+            raise rerr
+
+
+    async def _fetch_all_audio(self):
+        list_of_blocks = []
+        try:
+            while True:
+                list_of_blocks.append(self._buffer_queue.get_nowait())
+        except asyncio.QueueEmpty:
+            ...
+        return numpy.concatenate(list_of_blocks, axis=0)
 

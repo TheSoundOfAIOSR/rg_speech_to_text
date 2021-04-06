@@ -17,14 +17,16 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def stt_main(device, model, tokenizer, frame_len):
+def stt_main(device, model, tokenizer, frame_len, offline_mode):
+    logger.debug("offline_mode=%s", offline_mode)
     stt = SpeechToText(
             WaveNet(device=device, tokenizer_path=tokenizer, model_path=model),
             sample_rate=16000,
             frame_len=frame_len,
             frame_overlap=1, 
             decoder_offset=0,
-            channels=1)
+            channels=1,
+            offline_mode=offline_mode)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
     loop = asyncio.get_event_loop()
     try:
@@ -48,6 +50,8 @@ if __name__ == "__main__":
                         help="Host where the websocket server is to be bound")
     parser.add_argument("--port", "-p", default=8786, type=int, required=False,
                         help="Port where the websocket server is to be bound")
+    parser.add_argument("--offline_mode", "-ofl", default=1, type=int, required=False,
+                        help="Select offline transcription mode.")
     args = parser.parse_args()
 
-    stt_main(args.device, args.model, args.tokenizer, args.frame_len)
+    stt_main(args.device, args.model, args.tokenizer, args.frame_len, args.offline_mode == 1)
