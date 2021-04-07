@@ -17,10 +17,14 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def stt_main(device, model, tokenizer, frame_len, offline_mode):
+def stt_main(device, model, tokenizer, frame_len, offline_mode, use_vad):
     logger.debug("offline_mode=%s", offline_mode)
+    logger.debug("use_vad=%s", use_vad)
     stt = SpeechToText(
-            WaveNet(device=device, tokenizer_path=tokenizer, model_path=model),
+            WaveNet(device=device,
+                    tokenizer_path=tokenizer,
+                    model_path=model,
+                    use_vad=use_vad),
             sample_rate=16000,
             frame_len=frame_len,
             frame_overlap=1, 
@@ -52,6 +56,9 @@ if __name__ == "__main__":
                         help="Port where the websocket server is to be bound")
     parser.add_argument("--offline_mode", "-ofl", default=1, type=int, required=False,
                         help="Select offline transcription mode.")
+    parser.add_argument("--use_vad", "-vad", default=0, type=int, required=False,
+                        help="Use Voice Activity Detection.")
     args = parser.parse_args()
 
-    stt_main(args.device, args.model, args.tokenizer, args.frame_len, args.offline_mode == 1)
+    stt_main(args.device, args.model, args.tokenizer, args.frame_len,
+        args.offline_mode == 1, args.use_vad == 1)
