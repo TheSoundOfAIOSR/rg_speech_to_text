@@ -56,15 +56,16 @@ class WaveNet:
                 self.audio_buffer = inputs[cur_st:cur_ed]
                 return ''
 
-            print(' | ', end='') # to indicate separation by VAD
             self.audio_buffer = inputs[cur_ed+1:]
             inputs = inputs[cur_st:cur_ed]
 
             # for saving to file the chunks separated by VAD
             #self.vad_utils['save_audio'](f'chunk{self.counter}.wav', torch.Tensor(inputs), 16000)
             #self.counter += 1
+            return '<' + self.transformer_transcribe(inputs) + '>'
+        else:
+            return self.transformer_transcribe(inputs)
 
-        return self.transformer_transcribe(inputs)
 
     def transformer_transcribe(self, inputs):
         inputs = self.tokenizer(inputs, return_tensors='pt').input_values.to(self.device)
