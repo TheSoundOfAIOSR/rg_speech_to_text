@@ -9,6 +9,12 @@ Some features related to language models requires Linux. For Windows 10 users th
 
 ### Environment preparation
 
+#### Windows 10
+There is no specific setup for Windows 10.
+
+#### [optional] WSL2 setup
+If not using WSL2, skip this section.
+
 For users of WSL2, we provide a helper setup script available in `wsl2_setup` directory.
 That scripts will create a dedicated wsl instance, which then can be used for this project.
 Depending on which Windows version we have, we distinguish the following:
@@ -16,6 +22,13 @@ Depending on which Windows version we have, we distinguish the following:
  - Windows Build >= 21376 have WSL2 with WSLg, PulseAudio server integrated to communicate with host OS audio and can run graphical Linux apps.
  - Windows Build < 20150 have WSL2 which is sufficient to run in CPU mode.
 With minimal effort, WSL2 of any version listed above can give us an Ubuntu 20.04 LTS environment in which the OS specific setup is exactly the same as in native Ubuntu 20.04 LTS.
+
+#### [optional] Ubuntu 20.04 LTS setup
+If not using Ubuntu, skip this section.
+
+TODO: required packages
+
+
 
 ### Installing via pip
 - Download and Install python (recommend 3.8)
