@@ -3,34 +3,13 @@ Research Group Speech To Text
 
 This repository will be used to experiment/test new approaches before they are fit into the common codebase. 
 
-## Installation
+## Environment preparation
 This repo can be used in native Windows 10, native Ubuntu, Mac.
 Some features related to language models requires Linux. For Windows 10 users there is a possibility to use Ubuntu under WSL2.
 
-### Environment preparation
+### Windows 10
 
-#### Windows 10
-There is no specific setup for Windows 10.
-
-#### [optional] WSL2 setup
-If not using WSL2, skip this section.
-
-For users of WSL2, we provide a helper setup script available in `wsl2_setup` directory.
-That scripts will create a dedicated wsl instance, which then can be used for this project.
-Depending on which Windows version we have, we distinguish the following:
- - Windows Build >= 20150 have WSL2 with GPU access, therefore it can be installed CUDA as in native Linux.
- - Windows Build >= 21376 have WSL2 with WSLg, PulseAudio server integrated to communicate with host OS audio and can run graphical Linux apps.
- - Windows Build < 20150 have WSL2 which is sufficient to run in CPU mode.
-With minimal effort, WSL2 of any version listed above can give us an Ubuntu 20.04 LTS environment in which the OS specific setup is exactly the same as in native Ubuntu 20.04 LTS.
-
-#### [optional] Ubuntu 20.04 LTS setup
-If not using Ubuntu, skip this section.
-
-TODO: required packages
-
-
-
-### Installing via pip
+#### Installing via pip
 - Download and Install python (recommend 3.8)
 - Create a virtual environment using `python -m venv env_name`
 - enable created environment `env_path\Scripts\activate`
@@ -39,7 +18,7 @@ TODO: required packages
     `pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html`
 - install required dependencies `pip install -r requirements[-linux|-win].txt`
 
-### Installing via conda
+#### Installing via conda
 - Download and install miniconda
 - Create a new virutal environment using `conda create --name env_name python==3.8`
 - enable create environment `conda activate env_name`
@@ -52,7 +31,27 @@ TODO: required packages
   ```
   The reason for this different install path is [explained here.](setup/audio_setup.md)  
 
-### Installing TheSoundOfAIOSR's rg_speech_to_text from source
+### [optional] WSL2 setup
+If not using WSL2, skip this section.
+
+For users of WSL2, we provide a helper setup script available in `wsl2_setup` directory.
+That scripts will create a dedicated wsl instance, which then can be used for this project.
+Depending on which Windows version we have, we distinguish the following:
+ - Windows Build >= 20150 have WSL2 with GPU access, therefore it can be installed CUDA as in native Linux.
+ - Windows Build >= 21376 have WSL2 with WSLg, PulseAudio server integrated to communicate with host OS audio and can run graphical Linux apps.
+ - Windows Build < 20150 have WSL2 which is sufficient to run in CPU mode.
+With minimal effort, WSL2 of any version listed above can give us an Ubuntu 20.04 LTS environment in which the OS specific setup is exactly the same as in native Ubuntu 20.04 LTS.
+
+### [optional] Ubuntu 20.04 LTS setup
+If not using Ubuntu, skip this section.
+
+`ubuntu_setup/initial_setup.sh` will
+ - install the necessary ubuntu packages,
+ - create the python virtual environment, 
+ - install the requirements.
+ - install NeMo toolkit r1.0.0rc1 from github
+  
+## Installing TheSoundOfAIOSR's rg_speech_to_text from source
 
 ```
 bash
