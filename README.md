@@ -40,10 +40,12 @@ Depending on which Windows version we have, we distinguish the following:
  - Windows Build >= 20150 have WSL2 with GPU access, therefore it can be installed CUDA as in native Linux.
  - Windows Build >= 21376 have WSL2 with WSLg, PulseAudio server integrated to communicate with host OS audio and can run graphical Linux apps.
  - Windows Build < 20150 have WSL2 which is sufficient to run in CPU mode.
-With minimal effort, WSL2 of any version listed above can give us an Ubuntu 20.04 LTS environment in which the OS specific setup is exactly the same as in native Ubuntu 20.04 LTS.
+With minimal effort, WSL2 of any version listed above can give us an Ubuntu 20.04 LTS environment in which the OS specific setup is exactly the same as in native Ubuntu 20.04 LTS. Therefore, the next section is also necessary to be executed in the running WSL2 instance.
 
 ### [optional] Ubuntu 20.04 LTS setup
-If not using Ubuntu, skip this section.
+If not using Ubuntu (including Ubuntu in WSL2), skip this section.
+
+The setup script below is common for native Ubuntu or Ubuntu running in WSL2.
 
 `ubuntu_setup/initial_setup.sh` will
  - install the necessary ubuntu packages,
