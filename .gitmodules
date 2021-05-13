@@ -1,0 +1,3 @@
+[submodule "wsl2_setup"]
+	path = wsl2_setup
+	url = https://github.com/tiborkiss/wsl2_for_audio_research
