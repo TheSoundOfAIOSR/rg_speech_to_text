@@ -35,22 +35,26 @@ async def main(device):
     FRAME_OVERLAP = 2
     # decoder offset
     OFFSET = 4
-    asr = create_quartznet_streaming_asr(sample_rate=SAMPLE_RATE,
-                                     frame_len=FRAME_LEN,
-                                     frame_overlap=FRAME_OVERLAP,
-                                     offset=OFFSET)
-    audio_task = asyncio.create_task(capture_and_transcribe(
-            asr, SAMPLE_RATE, CHANNELS, device,
-            int(FRAME_LEN * SAMPLE_RATE), offset=OFFSET))
-    print('capture...')
-    for i in range(600, 0, -1):
-        sys.stdout.flush()
-        await asyncio.sleep(0.1)
-    audio_task.cancel()
     try:
-        await audio_task
-    except asyncio.CancelledError:
-        print('\nwire was cancelled')
+        asr = create_quartznet_streaming_asr(sample_rate=SAMPLE_RATE,
+                                        frame_len=FRAME_LEN,
+                                        frame_overlap=FRAME_OVERLAP,
+                                        offset=OFFSET,
+                                        device='cpu')
+        audio_task = asyncio.create_task(capture_and_transcribe(
+                asr, SAMPLE_RATE, CHANNELS, device,
+                int(FRAME_LEN * SAMPLE_RATE), offset=OFFSET))
+        print('capture...')
+        for i in range(600, 0, -1):
+            sys.stdout.flush()
+            await asyncio.sleep(0.1)
+        audio_task.cancel()
+        try:
+            await audio_task
+        except asyncio.CancelledError:
+            print('\nwire was cancelled')
+    except AssertionError as e:
+        print(type(e).__name__ + ': ' + str(e))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import torch
 
 import nemo.collections.asr as nemo_asr
 
@@ -12,7 +13,7 @@ from TheSoundOfAIOSR.stt.nemo.audio_framer import FrameASR
 from TheSoundOfAIOSR.stt.nemo.streaming_decoder import StreaminDecoderASR
 
 
-def create_quartznet_streaming_asr(sample_rate, frame_len, frame_overlap, offset):
+def create_quartznet_streaming_asr(sample_rate, frame_len, frame_overlap, offset, device='cpu'):
     '''
     Args:
       sample_rate: sample rate, Hz
@@ -80,7 +81,8 @@ def create_quartznet_streaming_asr(sample_rate, frame_len, frame_overlap, offset
     # Set model to inference mode
     asr_model.eval()
 
-    asr_model = asr_model.to(asr_model.device)
+    # instead of using directly asr_model.device, we select given the parameter device
+    asr_model = asr_model.to(torch.device(device))
 
     data_layer = AudioDataLayer(sample_rate=cfg.preprocessor.sample_rate)
     data_loader = DataLoader(data_layer, batch_size=1, collate_fn=data_layer.collate_fn)

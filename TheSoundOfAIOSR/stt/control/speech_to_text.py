@@ -10,27 +10,16 @@ from TheSoundOfAIOSR.audiointerface.capture import MicrophoneStreaming
 logger = logging.getLogger('sptt')
 
 class SpeechToText:
-    def __init__(self, asr, sample_rate: int,
-                 frame_len: float, frame_overlap: int, 
-                 decoder_offset=0, channels=1, offline_mode=False):
+    def __init__(self, asr, block_size: int, offline_mode=False):
         """ 
         Args:
-            asr - ASR engine
-            sample_rate - sample rate, Hz
-            frame_len - duration of signal frame, seconds
-            frame_overlap - frame overlap (for example 2)
-            decoder_offset - decoder offset
-            channels - number of audio channels (expect mono signal)
-            offline_mode - first capture all, then transcribe at stop
+            asr: ASR engine
+            block_size: block size
+            offline_mode: first capture all, then transcribe at stop
         """
         self._asr = asr
-        self._sample_rate = sample_rate
-        self._channels = channels
-        self._frame_len = frame_len
-        self._frame_overlap = frame_overlap
-        self._decoder_offset = decoder_offset
         self._offline_mode = offline_mode
-        self._block_size = int(frame_len * sample_rate * frame_overlap)
+        self._block_size = block_size
         self._buffer_queue = asyncio.Queue()
         self._loop = None
         self._asr_task = None
