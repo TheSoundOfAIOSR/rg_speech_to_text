@@ -16,14 +16,14 @@ Some features related to language models requires Linux. For Windows 10 users th
 - Update pip and setuptools using `python -m pip install --upgrade pip setuptools`
 - Install PyTorch 1.7.1 from https://pytorch.org/get-started/locally/  with `torchvision` and `torchaudio`
     `pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html`
-- install required dependencies `pip install -r requirements[-linux|-win].txt`
+- install required dependencies `pip install -r requirements-win.txt`
 
 #### Installing via conda
 - Download and install miniconda
 - Create a new virutal environment using `conda create --name env_name python==3.8`
 - enable create environment `conda activate env_name`
 - Install PyTorch `conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=11.0 -c pytorch`
-- install required dependencies `pip install -r requirements[-linux].txt` 
+- install required dependencies `pip install -r requirements-win.txt` 
   For Windows platform it is enough requirements.txt and in addition install the audio driver from conda, like the following:
   ```
   conda install -c conda-forge python-sounddevice
