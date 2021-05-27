@@ -27,7 +27,7 @@ class SimpleServerInterface(WebsocketServer):
     async def setup_model(self):
         try:
             successful = await self._control.load_stt_models(
-                    self._stt, timeout_sec = 10.0)
+                    self._stt, timeout_sec = 30.0)
             if successful: 
                 yield {"resp": True}
             else:
