@@ -20,7 +20,7 @@ class SpeechToText:
         self._asr = asr
         self._offline_mode = offline_mode
         self._block_size = block_size
-        self._buffer_queue = asyncio.Queue()
+        self._buffer_queue = None
         self._loop = None
         self._asr_task = None
 
@@ -38,6 +38,7 @@ class SpeechToText:
     async def start_capture_and_transcribe(
             self, sound_device: str):
         loop = self._ensure_loop()
+        self._buffer_queue = asyncio.Queue()
         start_time = loop.time()
         started_future = loop.create_future()
         
@@ -77,8 +78,11 @@ class SpeechToText:
         # now we can fetch all the transcription output
         
         if self._offline_mode:
-            full_transcription = await asyncio.create_task(
-                    self._asr.transcribe(await self._fetch_all_audio(), loop))
+            try:
+                full_transcription = await asyncio.create_task(
+                        self._asr.transcribe(await self._fetch_all_audio(), loop))
+            except ValueError:
+                ...
         else:
             full_transcription = await asyncio.create_task(
                     self._fetch_all_transcription())
@@ -152,6 +156,8 @@ class SpeechToText:
             while True:
                 list_of_blocks.append(self._buffer_queue.get_nowait())
         except asyncio.QueueEmpty:
+            ...
+        except ValueError:
             ...
         return numpy.concatenate(list_of_blocks, axis=0)
 
