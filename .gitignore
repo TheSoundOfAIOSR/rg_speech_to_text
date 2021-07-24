@@ -144,3 +144,8 @@ dmypy.json
 
 # here are pulled external repos to locally build
 externals/
+
+# during training with NeMo creates these temporary subdirectories
+notebooks/datasets
+notebooks/experiments
+notebooks/scripts
