@@ -7,16 +7,18 @@ import transformers
 import numpy as np
 
 class WaveNet:
-    def __init__(self, device="cpu", tokenizer_path=None, model_path=None, use_vad=False):
+    def __init__(self, device="cpu", tokenizer_path=None, model_path=None,
+                 use_vad=False, pretrained_model_name="facebook/wav2vec2-base-960h"):
         self.device = torch.device(device)
         self.tokenizer_path = tokenizer_path
         self.model_path = model_path
         self.use_vad = use_vad
+        self.pretrained_model_name = pretrained_model_name
 
     def load_model(self):
-        tokenizer = (transformers.Wav2Vec2Tokenizer.from_pretrained("facebook/wav2vec2-base-960h")
+        tokenizer = (transformers.Wav2Vec2Tokenizer.from_pretrained(self.pretrained_model_name)
                 if self.tokenizer_path is None else torch.load(self.tokenizer_path))
-        model = (transformers.Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h") 
+        model = (transformers.Wav2Vec2ForCTC.from_pretrained(self.pretrained_model_name) 
                     if self.model_path is None else torch.load(self.model_path))
         model.eval()
         model.to(self.device)

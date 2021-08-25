@@ -16,7 +16,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode, use_vad):
+def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
+                     use_vad, pretrained_wavenet_model_name):
     """
     Args:
         device: 'cpu' or 'cuda'
@@ -25,6 +26,7 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode, use_vad)
         frame_len: duration of signal frame, seconds
         offline_mode: offline mode
         use_vad: use voice activity detection
+        pretrained_wavenet_model_name: model name
     """
     from TheSoundOfAIOSR.stt.wavenet.inference import WaveNet
 
@@ -38,7 +40,8 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode, use_vad)
             WaveNet(device=device,
                     tokenizer_path=tokenizer,
                     model_path=model,
-                    use_vad=use_vad),
+                    use_vad=use_vad,
+                    pretrained_model_name=pretrained_wavenet_model_name),
             block_size=int(frame_len * SAMPLE_RATE * FRAME_OVERLAP),
             offline_mode=offline_mode)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
@@ -101,11 +104,13 @@ if __name__ == "__main__":
                         help="Select offline transcription mode.")
     parser.add_argument("--use_vad", "-vad", default=0, type=int, required=False,
                         help="Use Voice Activity Detection.")
+    parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="facebook/wav2vec2-base-960h", 
+                        type=str, required=False, help="Pretrained wavenet model name")
     args = parser.parse_args()
 
     if args.family == 'wavenet':
         stt_main_wavenet(args.device, args.model, args.tokenizer, args.frame_len,
-            args.offline_mode == 1, args.use_vad == 1)
+            args.offline_mode == 1, args.use_vad == 1, args.pretrained_wavenet_model_name)
     elif args.family == 'nemo':
         stt_main_nemo(args.device, args.frame_len, args.offline_mode == 1)
 
