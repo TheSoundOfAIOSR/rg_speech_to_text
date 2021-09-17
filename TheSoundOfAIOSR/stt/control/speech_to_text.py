@@ -10,12 +10,13 @@ from TheSoundOfAIOSR.audiointerface.capture import MicrophoneStreaming
 logger = logging.getLogger('sptt')
 
 class SpeechToText:
-    def __init__(self, asr, block_size: int, offline_mode=False):
+    def __init__(self, asr, block_size: int, offline_mode=False, close_delay=0.6):
         """ 
         Args:
             asr: ASR engine
             block_size: block size
             offline_mode: first capture all, then transcribe at stop
+            close_delay: a delay at stop capturing, in order to prevent early cut
         """
         self._asr = asr
         self._offline_mode = offline_mode
@@ -23,6 +24,7 @@ class SpeechToText:
         self._buffer_queue = None
         self._loop = None
         self._asr_task = None
+        self._close_delay = close_delay
 
 
     def _ensure_loop(self):
@@ -72,7 +74,11 @@ class SpeechToText:
         start_time = loop.time()
         closed_future = loop.create_future()
         # schedule a threasafe cancel stask (when transcription coroutine is suspended)
-        loop.call_soon_threadsafe(_cancel_task, self._asr_task, closed_future)
+        if self._close_delay > 0:
+            loop.call_later(self._close_delay, _cancel_task, self._asr_task, closed_future)
+        else:
+            loop.call_soon_threadsafe(_cancel_task, self._asr_task, closed_future)
+
         stopped = await closed_future
         delta_closing_time = loop.time() - start_time
         # now we can fetch all the transcription output

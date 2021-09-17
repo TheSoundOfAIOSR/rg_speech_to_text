@@ -17,7 +17,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
-                     use_vad, pretrained_wavenet_model_name):
+                     use_vad, pretrained_wavenet_model_name, close_delay):
     """
     Args:
         device: 'cpu' or 'cuda'
@@ -27,6 +27,7 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
         offline_mode: offline mode
         use_vad: use voice activity detection
         pretrained_wavenet_model_name: model name
+        close_delay: a delay applied before closing the mic capture
     """
     from TheSoundOfAIOSR.stt.wavenet.inference import WaveNet
 
@@ -43,7 +44,8 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
                     use_vad=use_vad,
                     pretrained_model_name=pretrained_wavenet_model_name),
             block_size=int(frame_len * SAMPLE_RATE * FRAME_OVERLAP),
-            offline_mode=offline_mode)
+            offline_mode=offline_mode,
+            close_delay=close_delay)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
     loop = asyncio.get_event_loop()
     try:
@@ -52,12 +54,13 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
         logger.info("Successfully shutdown the Speech To Text service.")
 
 
-def stt_main_nemo(device, frame_len, offline_mode):
+def stt_main_nemo(device, frame_len, offline_mode, close_delay):
     """
     Args:
         device: 'cpu' or 'cuda'
         frame_len: duration of signal frame, seconds
         offline_mode: offline mode
+        close_delay: a delay applied before closing the mic capture
     """
     from TheSoundOfAIOSR.stt.nemo.inference import NemoASR
 
@@ -75,7 +78,8 @@ def stt_main_nemo(device, frame_len, offline_mode):
                     offset=OFFSET,
                     device=device),
             block_size=int(frame_len * SAMPLE_RATE * FRAME_OVERLAP),
-            offline_mode=offline_mode)
+            offline_mode=offline_mode,
+            close_delay=close_delay)
     srv = SimpleServerInterface(stt=stt, host="localhost", port=8786)
     loop = asyncio.get_event_loop()
     try:
@@ -105,12 +109,15 @@ if __name__ == "__main__":
     parser.add_argument("--use_vad", "-vad", default=0, type=int, required=False,
                         help="Use Voice Activity Detection.")
     parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="iamtarun/wav2vec-osr", 
-                        type=str, required=False, help="Pretrained wavenet model name. eg: facebook/wav2vec2-base-960h")
+                        type=str, required=False, help="Pretrained wavenet model name. eg: facebook/wav2vec2-base-960h"),
+    parser.add_argument("--close_delay", "-cld", default=0.6, type=float, required=False,
+                        help="A delay in seconds applied to microphone close at stop capturing the signal")
     args = parser.parse_args()
 
     if args.family == 'wavenet':
         stt_main_wavenet(args.device, args.model, args.tokenizer, args.frame_len,
-            args.offline_mode == 1, args.use_vad == 1, args.pretrained_wavenet_model_name)
+            args.offline_mode == 1, args.use_vad == 1, args.pretrained_wavenet_model_name,
+            args.close_delay)
     elif args.family == 'nemo':
-        stt_main_nemo(args.device, args.frame_len, args.offline_mode == 1)
+        stt_main_nemo(args.device, args.frame_len, args.offline_mode == 1, args.close_delay)
 
