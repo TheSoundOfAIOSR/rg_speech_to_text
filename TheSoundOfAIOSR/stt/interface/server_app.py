@@ -104,8 +104,8 @@ if __name__ == "__main__":
                         help="Select offline transcription mode.")
     parser.add_argument("--use_vad", "-vad", default=0, type=int, required=False,
                         help="Use Voice Activity Detection.")
-    parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="facebook/wav2vec2-base-960h", 
-                        type=str, required=False, help="Pretrained wavenet model name")
+    parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="iamtarun/wav2vec-osr", 
+                        type=str, required=False, help="Pretrained wavenet model name. eg: facebook/wav2vec2-base-960h")
     args = parser.parse_args()
 
     if args.family == 'wavenet':
