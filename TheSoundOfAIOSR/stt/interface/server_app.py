@@ -17,7 +17,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
-                     use_vad, pretrained_wavenet_model_name, close_delay):
+                     use_vad, pretrained_wavenet_model_name, beam_width,
+                     lm_path, close_delay):
     """
     Args:
         device: 'cpu' or 'cuda'
@@ -27,6 +28,10 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
         offline_mode: offline mode
         use_vad: use voice activity detection
         pretrained_wavenet_model_name: model name
+        beam_width: beam size to search if beam_width <= 1 then greedy search 
+                    (max character probalilities in every timestep), else beam search
+        lm_path: path to language model folder with unigram and bigram files, if None then
+                it will perform beam search without language model
         close_delay: a delay applied before closing the mic capture
     """
     from TheSoundOfAIOSR.stt.wavenet.inference import WaveNet
@@ -42,7 +47,9 @@ def stt_main_wavenet(device, model, tokenizer, frame_len, offline_mode,
                     tokenizer_path=tokenizer,
                     model_path=model,
                     use_vad=use_vad,
-                    pretrained_model_name=pretrained_wavenet_model_name),
+                    pretrained_model_name=pretrained_wavenet_model_name,
+                    beam_width=beam_width,
+                    lm_path=lm_path),
             block_size=int(frame_len * SAMPLE_RATE * FRAME_OVERLAP),
             offline_mode=offline_mode,
             close_delay=close_delay)
@@ -109,7 +116,11 @@ if __name__ == "__main__":
     parser.add_argument("--use_vad", "-vad", default=0, type=int, required=False,
                         help="Use Voice Activity Detection.")
     parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="iamtarun/wav2vec-osr", 
-                        type=str, required=False, help="Pretrained wavenet model name. eg: facebook/wav2vec2-base-960h"),
+                        type=str, required=False, help="Pretrained wavenet model name. eg: facebook/wav2vec2-base-960h")
+    parser.add_argument("--beam_width", "-bw", default=1, type=int, required=False,
+                        help="beam width to use for beam search decoder during inferencing")
+    parser.add_argument("--language_model", "-lm", default=None, required=False, type=str,
+                        help="Trained language model folder path with unigram and bigram files")
     parser.add_argument("--close_delay", "-cld", default=0.6, type=float, required=False,
                         help="A delay in seconds applied to microphone close at stop capturing the signal")
     args = parser.parse_args()
@@ -117,7 +128,7 @@ if __name__ == "__main__":
     if args.family == 'wavenet':
         stt_main_wavenet(args.device, args.model, args.tokenizer, args.frame_len,
             args.offline_mode == 1, args.use_vad == 1, args.pretrained_wavenet_model_name,
-            args.close_delay)
+            args.beam_width, args.language_model, args.close_delay)
     elif args.family == 'nemo':
         stt_main_nemo(args.device, args.frame_len, args.offline_mode == 1, args.close_delay)
 
