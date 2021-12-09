@@ -18,13 +18,13 @@ parser.add_argument("--output", "-out", required=False,
                     help="Output Path for saving resultant transcriptions")
 parser.add_argument("--device", "-d", default='cpu', nargs='?', choices=['cuda', 'cpu'], required=False,
                     help="device to use for inferencing")
-parser.add_argument("--pretrained_wavenet_model_name", "-pwmn", default="facebook/wav2vec2-base-960h", 
+parser.add_argument("--pretrained_model_name", "-pwmn", default="facebook/wav2vec2-base-960h", 
                     type=str, required=False, help="Pretrained wavenet model name")
 
 args = parser.parse_args()
 
 wavenet = WaveNet(device=args.device, tokenizer_path=args.tokenizer, model_path=args.model,
-                  use_vad=True, pretrained_wavenet_model_name=args.pretrained_wavenet_model_name)
+                  use_vad=True, pretrained_model_name=args.pretrained_model_name)
 
 print("Loading Models ...")
 wavenet.load_model()
