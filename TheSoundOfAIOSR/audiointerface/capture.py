@@ -1,6 +1,5 @@
 import time
 import asyncio
-import pyaudio
 import sounddevice as sd
 import numpy as np
 import soundfile as sf
