@@ -1,8 +1,8 @@
-numpy==1.20.1
+numpy==1.20.3
 pycparser==2.20
 librosa==0.8.0
 SoundFile==0.10.3.post1
-transformers==4.3.3
+transformers==4.9.2
 statesman==1.0.1
-rgws
-Cython
+rgws==0.1.5
+Cython==0.29.25
